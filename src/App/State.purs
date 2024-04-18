@@ -38,6 +38,7 @@ type State =
     { context :: Context
     , focus :: Focus
     , file :: OrgFile
+    , chars :: String -- TEMPORARY
     }
 
 
@@ -47,4 +48,5 @@ init =
     { context : TopLevel
     , focus : Focus Nowhere
     , file : Org.empty
+    , chars : ""
     }
