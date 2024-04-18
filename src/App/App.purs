@@ -28,6 +28,7 @@ import Web.UIEvent.KeyboardEvent.EventTypes as KET
 
 data Action
   = Initialize
+  | None
   | Increment
   | HandleKey H.SubscriptionId KE.KeyboardEvent
 
@@ -61,6 +62,7 @@ render state =
 handleAction :: forall cs o m. MonadAff m => Action → H.HalogenM State Action cs o m Unit
 handleAction = case _ of
   Increment -> pure unit -- H.modify_ \st -> st { count = st.count + 1 }
+  None -> pure unit
   Initialize -> do
     document <- H.liftEffect $ document =<< window
     H.subscribe' \sid ->
@@ -68,7 +70,11 @@ handleAction = case _ of
         KET.keyup
         (HTMLDocument.toEventTarget document)
         (map (HandleKey sid) <<< KE.fromEvent)
-  HandleKey sid ev
+  HandleKey _ ev ->
+    case findNextAction ev of
+        None -> pure unit
+        nextAction -> handleAction nextAction
+    {-
     | KE.shiftKey ev -> do
         H.liftEffect $ E.preventDefault $ KE.toEvent ev
         let char = KE.key ev
@@ -82,3 +88,8 @@ handleAction = case _ of
 
     | otherwise ->
         pure unit
+    -}
+
+
+findNextAction :: KE.KeyboardEvent -> Action
+findNextAction = const None
