@@ -55,7 +55,7 @@ render state =
     , HH.div_
         [ HH.p_ [ HH.text "Hold down the shift key and type some characters!" ]
         , HH.p_ [ HH.text "Press ENTER or RETURN to clear and remove the event listener." ]
-        , HH.p_ [ HH.text state.chars ]
+        -- , HH.p_ [ HH.text state.chars ]
         ]
     ]
 

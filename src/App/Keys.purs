@@ -25,6 +25,10 @@ data Combo
     | Sequence Combo Combo
 
 
+seq :: Combo -> Combo -> Combo
+seq = Sequence
+
+
 shift :: Modifier
 shift = Shift
 

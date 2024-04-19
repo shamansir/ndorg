@@ -11,7 +11,7 @@ import Data.Text.Format.Org.Construct (empty) as Org
 
 import App.Keys (Combo(..), Key(..), Modifier(..))
 import App.Keys (shift, opt, cmd) as Mod
-import App.Keys (char, code, mod) as Combo
+import App.Keys (char, code, mod, seq) as Combo
 
 
 data Context
@@ -45,9 +45,7 @@ type State =
     { context :: Context
     , focus :: Focus
     , file :: OrgFile
-    , chars :: String -- TEMPORARY
     }
-
 
 
 init :: State
@@ -55,7 +53,6 @@ init =
     { context : TopLevel
     , focus : Focus Nowhere
     , file : Org.empty
-    , chars : ""
     }
 
 
@@ -71,13 +68,13 @@ combo = Combo
 
 topLevel :: Array Combo
 topLevel =
-    [ Combo.char 'n' "add title" -- Change title if it exists
-    , Combo.char 'v' "add property"
+    [ Combo.char 'v' "add property"
     , Combo.char 'p' "add paragraph"
     , Combo.char 'h' "add heading" -- same as task / item
     , Combo.char 'k' "add task"
     , Combo.char 'i' "add item"
     , Combo.char 'a' "agenda"
+    , Combo.seq (Combo.char 'x' "agenda") (Combo.char 'y' "test")
     ]
 
 
