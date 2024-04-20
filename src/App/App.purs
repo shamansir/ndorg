@@ -1,36 +1,44 @@
 module App.App where
 
 import Prelude
-import Halogen as H
-import Halogen.HTML as HH
-import Halogen.HTML.Events as HE
-
 
 import Data.Maybe (Maybe(..))
 import Data.String as String
+
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
+
 import Halogen as H
 import Halogen.Aff as HA
 import Halogen.HTML as HH
+import Halogen.HTML.Properties as HP
 import Halogen.Query.Event (eventListener)
 import Halogen.VDom.Driver (runUI)
-import Web.Event.Event as E
+import Halogen.HTML.Events as HE
+
+
 import Web.HTML (window)
 import Web.HTML.HTMLDocument as HTMLDocument
 import Web.HTML.Window (document)
 
-import App.State (State)
-import App.State (init) as State
-
+import Web.Event.Event as E
 import Web.UIEvent.KeyboardEvent as KE
 import Web.UIEvent.KeyboardEvent.EventTypes as KET
+
+import App.State (State)
+import App.State (init, suggestions) as State
+import App.Utils (cn)
+
+import App.Component.Combo as Combo
 
 data Action
   = Initialize
   | None
   | Increment
   | HandleKey H.SubscriptionId KE.KeyboardEvent
+  | AddHeading
+  | AddProperty
+
 
 component :: forall q i o m. MonadAff m => H.Component q i o m
 component =
@@ -46,7 +54,7 @@ component =
 render :: forall cs m. State -> H.ComponentHTML Action cs m
 render state =
   HH.div_
-    [ HH.p_
+    {- HH.p_
         -- [ HH.text $ "You clicked " <> show state.count <> " times" ]
         []
     , HH.button
@@ -57,6 +65,16 @@ render state =
         , HH.p_ [ HH.text "Press ENTER or RETURN to clear and remove the event listener." ]
         -- , HH.p_ [ HH.text state.chars ]
         ]
+    , -}
+    [ HH.div
+        [ HP.class_ $ cn "norg-editor" ]
+        []
+    , HH.div
+        [ HP.class_ $ cn "norg-preview" ]
+        []
+    , HH.div
+        [ HP.class_ $ cn "keys-suggest" ]
+        $ Combo.render <$> State.suggestions state.context
     ]
 
 handleAction :: forall cs o m. MonadAff m => Action → H.HalogenM State Action cs o m Unit
@@ -74,6 +92,10 @@ handleAction = case _ of
     case findNextAction ev of
         None -> pure unit
         nextAction -> handleAction nextAction
+  AddHeading ->
+    pure unit
+  AddProperty ->
+    pure unit
     {-
     | KE.shiftKey ev -> do
         H.liftEffect $ E.preventDefault $ KE.toEvent ev

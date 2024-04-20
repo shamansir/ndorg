@@ -20,12 +20,12 @@ data Key
 
 
 data Combo
-    = Combo (NonEmptyArray Key) String
-    | ModCombo Modifier Combo
-    | Sequence Combo Combo
+    = Single Key String
+    | WithModifier Modifier Combo
+    | Sequence Combo (Array Combo)
 
 
-seq :: Combo -> Combo -> Combo
+seq :: Combo -> Array Combo -> Combo
 seq = Sequence
 
 
@@ -42,12 +42,12 @@ opt = Option
 
 
 char :: Char -> String -> Combo
-char c = Combo $ NE.singleton $ Alpha c
+char = Single <<< Alpha
 
 
 code :: Int -> String -> String -> Combo
-code n symbol = Combo $ NE.singleton $ Special n symbol
+code n = Single <<< Special n
 
 
 mod :: Modifier -> Combo -> Combo
-mod = ModCombo
+mod = WithModifier

@@ -19,7 +19,7 @@ data Context
     | InSection
     | InBlock
     -- TODO | Planning
-    | EnteringWords
+    | EditinggWords
 
 
 data PathItem =
@@ -57,10 +57,11 @@ init =
 
 
 suggestions :: Context -> Array Combo
-suggestions = const []
+suggestions = case _ of
+    TopLevel -> topLevel
+    InSection -> headingSelected
+    _ -> []
 
-
-combo = Combo
 
 
 -- TODO: group combos
@@ -68,13 +69,14 @@ combo = Combo
 
 topLevel :: Array Combo
 topLevel =
-    [ Combo.char 'v' "add property"
-    , Combo.char 'p' "add paragraph"
-    , Combo.char 'h' "add heading" -- same as task / item
-    , Combo.char 'k' "add task"
-    , Combo.char 'i' "add item"
+    [ Combo.seq (Combo.char 'a' "add...")
+        [ Combo.char 'v' "property"
+        , Combo.char 'p' "paragraph"
+        , Combo.char 'h' "heading"
+        , Combo.char 't' "task"
+        , Combo.char 'i' "item"
+        ]
     , Combo.char 'a' "agenda"
-    , Combo.seq (Combo.char 'x' "agenda") (Combo.char 'y' "test")
     ]
 
 

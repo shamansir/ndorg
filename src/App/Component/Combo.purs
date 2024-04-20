@@ -4,13 +4,12 @@ import Prelude
 
 import Data.Array.NonEmpty as NEA
 import Data.Traversable (traverse)
-import Data.Newtype (wrap) as NT
 import Data.String as String
 import Data.String.CodeUnits (singleton) as String
 
 import App.Keys (Key(..), Modifier(..), Combo(..))
+import App.Utils (cn)
 
-import Web.HTML.Common (ClassName)
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 
@@ -20,31 +19,26 @@ data State
     | WaitingSecondKey
 
 
-cn :: String -> ClassName
-cn = NT.wrap
-
-
 render :: forall w i. Combo -> HH.HTML w i
 render c =
     HH.div
         [ HP.class_ $ cn "combo" ]
         $ case c of
-            Combo keys def ->
-                [ HH.div
-                    [ HP.class_ $ cn "keys" ]
-                    $ key <$> NEA.toArray keys
+            Single ckey def ->
+                [ key ckey
                 , HH.div
                     [ HP.class_ $ cn "def" ]
                     [ HH.text def ]
                 ]
-            ModCombo mod combo ->
+            WithModifier mod combo ->
                 [ modifier mod
                 , render combo
                 ]
-            Sequence comboA comboB ->
-                [ render comboA
-                , HH.span_ [ HH.text "..." ]
-                , render comboB
+            Sequence root _ ->
+                [ render root
+                , HH.div
+                    [ HP.class_ $ cn "def" ]
+                    [ HH.text $ "..." ]
                 ]
 
 
