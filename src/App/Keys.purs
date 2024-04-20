@@ -3,6 +3,10 @@ module App.Keys where
 import Prelude
 
 
+import Data.Maybe (Maybe(..))
+import Data.Tuple.Nested ((/\), type (/\))
+
+
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as NE
 
@@ -51,3 +55,19 @@ code n = Single <<< Special n
 
 mod :: Modifier -> Combo -> Combo
 mod = WithModifier
+
+
+data Match
+    = None
+    | Exact Combo
+    | Wait Combo
+
+
+type KeyEvent =
+    { key :: Key
+    , modifier :: Maybe Modifier
+    }
+
+
+matches :: Array Combo -> KeyEvent -> Match
+matches _ _ = None

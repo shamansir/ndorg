@@ -5,6 +5,8 @@ import Prelude
 import Data.Maybe (Maybe(..))
 import Data.String as String
 
+import Control.Monad.State (get) as State
+
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
 
@@ -27,9 +29,11 @@ import Web.UIEvent.KeyboardEvent.EventTypes as KET
 
 import App.State (State)
 import App.State (init, suggestions) as State
-import App.Utils (cn)
+import App.Utils (cn, extract)
 
 import App.Component.Combo as Combo
+import App.Keys (Combo)
+import App.Keys (Match, matches) as Keys
 
 data Action
   = Initialize
@@ -89,8 +93,9 @@ handleAction = case _ of
         KET.keyup
         (HTMLDocument.toEventTarget document)
         (map (HandleKey sid) <<< KE.fromEvent)
-  HandleKey _ ev ->
-    case findNextAction ev of
+  HandleKey _ ev -> do
+    state <- State.get
+    case nextActionByKeypress (State.suggestions state.context) ev of
         None -> pure unit
         nextAction -> handleAction nextAction
   AddHeading ->
@@ -114,5 +119,10 @@ handleAction = case _ of
     -}
 
 
-findNextAction :: KE.KeyboardEvent -> Action
-findNextAction = const None
+nextActionByKeypress :: Array Combo -> KE.KeyboardEvent -> Action
+nextActionByKeypress curCombos wkevt =
+  case extract wkevt of
+    Just kevt ->
+      case Keys.matches curCombos kevt of
+        _ -> None
+    _ -> None

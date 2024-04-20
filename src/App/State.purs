@@ -19,7 +19,8 @@ data Context
     | InSection
     | InBlock
     -- TODO | Planning
-    | EditinggWords
+    | InCombo Combo
+    | EditingWords
 
 
 data PathItem =
