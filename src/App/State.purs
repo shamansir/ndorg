@@ -76,7 +76,7 @@ topLevel =
         , Combo.char 't' "task"
         , Combo.char 'i' "item"
         ]
-    , Combo.char 'a' "agenda"
+    , Combo.char 'g' "agenda"
     ]
 
 

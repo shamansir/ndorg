@@ -53,7 +53,7 @@ component =
 
 render :: forall cs m. State -> H.ComponentHTML Action cs m
 render state =
-  HH.div_
+  HH.div
     {- HH.p_
         -- [ HH.text $ "You clicked " <> show state.count <> " times" ]
         []
@@ -66,14 +66,15 @@ render state =
         -- , HH.p_ [ HH.text state.chars ]
         ]
     , -}
+    [ HP.class_ $ cn "ndorg" ]
     [ HH.div
-        [ HP.class_ $ cn "norg-editor" ]
-        []
+        [ HP.class_ $ cn "ndorg-editor" ]
+        [ HH.span [ HP.class_ $ cn "ndorg-hint" ] [ HH.text "Press a key..." ] ]
     , HH.div
-        [ HP.class_ $ cn "norg-preview" ]
-        []
+        [ HP.class_ $ cn "ndorg-preview" ]
+        [ HH.span [ HP.class_ $ cn "ndorg-hint" ] [ HH.text "Press a key..." ] ]
     , HH.div
-        [ HP.class_ $ cn "keys-suggest" ]
+        [ HP.class_ $ cn "ndorg-suggest" ]
         $ Combo.render <$> State.suggestions state.context
     ]
 
