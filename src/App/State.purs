@@ -11,7 +11,7 @@ import Data.Text.Format.Org.Construct (empty) as Org
 
 import App.Keys (Combo(..), Key(..), Modifier(..))
 import App.Keys (shift, opt, cmd) as Mod
-import App.Keys (char, code, mod, seq) as Combo
+import App.Keys (char, code, mod, seq, kcode) as Combo
 
 
 data Context
@@ -88,10 +88,10 @@ headingSelected =
     , Combo.code 45 "<-" "level higher" -- If not at the top
     , Combo.code 43 "" "move down"
     , Combo.code 41 "" "move up"
-    , Combo.mod Mod.shift $ Combo.code 45 "->" "cycle todo level fwd"
-    , Combo.mod Mod.shift $ Combo.code 42 "<-" "cycle todo level back"
-    , Combo.mod Mod.shift $ Combo.code 45 "" "priority up"
-    , Combo.mod Mod.shift $ Combo.code 42 "" "priority down"
+    , Combo.mod Mod.shift (Combo.kcode 45 "->") "cycle todo level fwd"
+    , Combo.mod Mod.shift (Combo.kcode 42 "<-") "cycle todo level back"
+    , Combo.mod Mod.shift (Combo.kcode 45 "") "priority up"
+    , Combo.mod Mod.shift (Combo.kcode 42 "") "priority down"
     , Combo.char 's' "schedule"
     , Combo.char 'd' "deadline"
     , Combo.char 'r' "repeat"

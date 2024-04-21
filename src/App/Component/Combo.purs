@@ -26,21 +26,22 @@ render c =
         $ case c of
             Single ckey def ->
                 [ key ckey
-                , HH.div
-                    [ HP.class_ $ cn "def" ]
-                    [ HH.text def ]
+                , defrender def
                 ]
-            WithModifier mod combo ->
+            WithModifier mod ckey def ->
                 [ modifier mod
-                , render combo
+                , key ckey
+                , defrender def
                 ]
             Sequence root _ ->
                 [ render root
-                , HH.div
-                    [ HP.class_ $ cn "def" ]
-                    [ HH.text $ "..." ]
+                , defrender "..."
                 ]
-
+    where
+        defrender txt =
+            HH.div
+                [ HP.class_ $ cn "def" ]
+                [ HH.text txt ]
 
 key :: forall w i. Key -> HH.HTML w i
 key k =
@@ -62,4 +63,5 @@ modifier m =
         $ case m of
             Shift -> [ HH.span_ [ HH.text "Shift" ] ]
             Option -> [ HH.span_ [ HH.text "Option" ] ]
+            Control -> [ HH.span_ [ HH.text "Control" ] ]
             Command -> [ HH.span_ [ HH.text "Command" ] ]
