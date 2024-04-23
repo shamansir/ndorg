@@ -45,7 +45,7 @@ html, body {
     margin-bottom: 5px;
 }
 
-.key {
+.key, .mod {
     display: inline-block;
     border: 1px solid black;
     padding: 3px 6px;

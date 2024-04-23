@@ -51,8 +51,8 @@ key k =
             Alpha char -> [ HH.span_ [ HH.text $ String.singleton char ] ]
             Num num -> [ HH.span_ [ HH.text $ show num ] ]
             Special n str ->
-                [ HH.span_ [ HH.text $ show n ]
-                , HH.span_ [ HH.text str ]
+                [ {- HH.span_ [ HH.text $ show n ]
+                , -} HH.span_ [ HH.text str ]
                 ]
 
 

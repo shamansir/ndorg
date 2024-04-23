@@ -83,14 +83,15 @@ topLevel =
         , Combo.char 'i' "item" None
         ]
     , Combo.char 'g' "agenda" None
+    , Combo.char 't' "set title" None
     ]
 
 
 headingSelected :: Array (Combo Action)
 headingSelected =
     [ Combo.char 'e' "edit heading" None
-    , Combo.code 45 "->" "level deep" None
-    , Combo.code 45 "<-" "level higher" None -- If not at the top
+    , Combo.code 45 "->" "level increase" None
+    , Combo.code 45 "<-" "level decrease" None -- If not at the top
     , Combo.code 43 "" "move down" None
     , Combo.code 41 "" "move up" None
     , Combo.mod Mod.shift (Combo.kcode 45 "->") "cycle todo level fwd" None

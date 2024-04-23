@@ -6,6 +6,7 @@ import Debug as Debug
 
 import Data.Maybe (Maybe(..))
 import Data.String as String
+import Data.Traversable (traverse_)
 
 import Control.Monad.State (get, modify, modify_) as State
 
@@ -103,9 +104,7 @@ handleAction = case _ of
     State.modify_ $ _ { curKey = extract ev }
   HandleKeyUp _ ev -> do
     state <- State.modify $ _ { curKey = Nothing }
-    case Debug.spy "next" $ nextActionByKeypress (AppState.suggestions state.context) ev of
-        None -> pure unit
-        nextAction -> handleAction nextAction
+    traverse_  (Debug.spy "next" >>> handleAction) $ nextActionByKeypress (AppState.suggestions state.context) ev
   ClearCombo ->
     State.modify_ $ _ { context = TopLevel }
   AddHeading -> do
@@ -133,12 +132,12 @@ handleAction = case _ of
     -}
 
 
-nextActionByKeypress :: Array (Combo Action) -> KE.KeyboardEvent -> Action
+nextActionByKeypress :: Array (Combo Action) -> KE.KeyboardEvent -> Array Action
 nextActionByKeypress curCombos wkevt =
   case extract wkevt of
     Just kevt ->
       case Debug.spy "matches" $ Keys.matches curCombos kevt of
-        Match.Exact combo -> Combo.get combo
-        Match.Wait combo nextCombos -> WaitForCombos combo nextCombos
-        Match.None -> ClearCombo
-    _ -> None
+        Match.Exact combo -> [ Combo.get combo ]
+        Match.Wait combo nextCombos -> [ WaitForCombos combo nextCombos ]
+        Match.None -> [ ClearCombo ]
+    _ -> []
