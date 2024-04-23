@@ -2,10 +2,12 @@ module App.App where
 
 import Prelude
 
+import Debug as Debug
+
 import Data.Maybe (Maybe(..))
 import Data.String as String
 
-import Control.Monad.State (get) as State
+import Control.Monad.State (get, modify, modify_) as State
 
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
@@ -18,7 +20,6 @@ import Halogen.Query.Event (eventListener)
 import Halogen.VDom.Driver (runUI)
 import Halogen.HTML.Events as HE
 
-
 import Web.HTML (window)
 import Web.HTML.HTMLDocument as HTMLDocument
 import Web.HTML.Window (document)
@@ -27,27 +28,22 @@ import Web.Event.Event as E
 import Web.UIEvent.KeyboardEvent as KE
 import Web.UIEvent.KeyboardEvent.EventTypes as KET
 
-import App.State (State)
-import App.State (init, suggestions) as State
+import App.State (State, Context(..))
+import App.State (init, suggestions) as AppState
 import App.Utils (cn, extract)
 
-import App.Component.Combo as Combo
+import App.Action (Action(..))
+import App.Component.Combo as ComboC
 import App.Keys (Combo)
 import App.Keys (Match, matches) as Keys
-
-data Action
-  = Initialize
-  | None
-  | Increment
-  | HandleKey H.SubscriptionId KE.KeyboardEvent
-  | AddHeading
-  | AddProperty
+import App.Keys (get) as Combo
+import App.Keys (Match(..)) as Match
 
 
 component :: forall q i o m. MonadAff m => H.Component q i o m
 component =
   H.mkComponent
-    { initialState: \_ -> State.init
+    { initialState: \_ -> AppState.init
     , render
     , eval: H.mkEval $ H.defaultEval
         { handleAction = handleAction
@@ -79,8 +75,13 @@ render state =
         [ HH.span [ HP.class_ $ cn "ndorg-hint" ] [ HH.text "Press a key..." ] ]
     , HH.div
         [ HP.class_ $ cn "ndorg-suggest" ]
-        $ Combo.render <$> State.suggestions state.context
+        $ ComboC.render <$> AppState.suggestions state.context
+    , case state.curKey of
+        Just kevt ->
+          HH.div [ HP.class_ $ cn "ndorg-curkey" ] [ ComboC.key kevt.key ]
+        Nothing -> HH.text ""
     ]
+
 
 handleAction :: forall cs o m. MonadAff m => Action → H.HalogenM State Action cs o m Unit
 handleAction = case _ of
@@ -90,18 +91,31 @@ handleAction = case _ of
     document <- H.liftEffect $ document =<< window
     H.subscribe' \sid ->
       eventListener
+        KET.keydown
+        (HTMLDocument.toEventTarget document)
+        (map (HandleKeyDown sid) <<< KE.fromEvent)
+    H.subscribe' \sid ->
+      eventListener
         KET.keyup
         (HTMLDocument.toEventTarget document)
-        (map (HandleKey sid) <<< KE.fromEvent)
-  HandleKey _ ev -> do
-    state <- State.get
-    case nextActionByKeypress (State.suggestions state.context) ev of
+        (map (HandleKeyUp sid) <<< KE.fromEvent)
+  HandleKeyDown _ ev -> do
+    State.modify_ $ _ { curKey = extract ev }
+  HandleKeyUp _ ev -> do
+    state <- State.modify $ _ { curKey = Nothing }
+    case Debug.spy "next" $ nextActionByKeypress (AppState.suggestions state.context) ev of
         None -> pure unit
         nextAction -> handleAction nextAction
-  AddHeading ->
+  ClearCombo ->
+    State.modify_ $ _ { context = TopLevel }
+  AddHeading -> do
+    State.modify_ $ _ { context = InSection }
     pure unit
-  AddProperty ->
+  AddProperty -> do
+    State.modify_ $ _ { context = InSection }
     pure unit
+  WaitForCombos combo nextCombos ->
+    State.modify_ $ _ { context = InCombo combo nextCombos }
     {-
     | KE.shiftKey ev -> do
         H.liftEffect $ E.preventDefault $ KE.toEvent ev
@@ -119,10 +133,12 @@ handleAction = case _ of
     -}
 
 
-nextActionByKeypress :: Array Combo -> KE.KeyboardEvent -> Action
+nextActionByKeypress :: Array (Combo Action) -> KE.KeyboardEvent -> Action
 nextActionByKeypress curCombos wkevt =
   case extract wkevt of
     Just kevt ->
-      case Keys.matches curCombos kevt of
-        _ -> None
+      case Debug.spy "matches" $ Keys.matches curCombos kevt of
+        Match.Exact combo -> Combo.get combo
+        Match.Wait combo nextCombos -> WaitForCombos combo nextCombos
+        Match.None -> ClearCombo
     _ -> None

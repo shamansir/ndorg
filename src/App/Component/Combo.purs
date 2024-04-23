@@ -19,16 +19,16 @@ data State
     | WaitingSecondKey
 
 
-render :: forall w i. Combo -> HH.HTML w i
+render :: forall a w i. Combo a -> HH.HTML w i
 render c =
     HH.div
         [ HP.class_ $ cn "combo" ]
         $ case c of
-            Single ckey def ->
+            Single ckey def _ ->
                 [ key ckey
                 , defrender def
                 ]
-            WithModifier mod ckey def ->
+            WithModifier mod ckey def _ ->
                 [ modifier mod
                 , key ckey
                 , defrender def

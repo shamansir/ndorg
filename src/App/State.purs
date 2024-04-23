@@ -4,12 +4,14 @@ import Prelude
 
 import Data.Array.NonEmpty ((:))
 import Data.Array.NonEmpty as NE
+import Data.Maybe (Maybe(..))
 
 
 import Data.Text.Format.Org.Types (OrgFile)
 import Data.Text.Format.Org.Construct (empty) as Org
 
-import App.Keys (Combo(..), Key(..), Modifier(..))
+import App.Action (Action(..))
+import App.Keys (Combo(..), Key(..), KeyEvent, Modifier(..))
 import App.Keys (shift, opt, cmd) as Mod
 import App.Keys (char, code, mod, seq, kcode) as Combo
 
@@ -19,7 +21,7 @@ data Context
     | InSection
     | InBlock
     -- TODO | Planning
-    | InCombo Combo
+    | InCombo (Combo Action) (Array (Combo Action))
     | EditingWords
 
 
@@ -46,6 +48,7 @@ type State =
     { context :: Context
     , focus :: Focus
     , file :: OrgFile
+    , curKey :: Maybe KeyEvent
     }
 
 
@@ -54,13 +57,15 @@ init =
     { context : TopLevel
     , focus : Focus Nowhere
     , file : Org.empty
+    , curKey : Nothing
     }
 
 
-suggestions :: Context -> Array Combo
+suggestions :: Context -> Array (Combo Action)
 suggestions = case _ of
     TopLevel -> topLevel
     InSection -> headingSelected
+    InCombo _ combos -> combos
     _ -> []
 
 
@@ -68,34 +73,34 @@ suggestions = case _ of
 -- TODO: group combos
 
 
-topLevel :: Array Combo
+topLevel :: Array (Combo Action)
 topLevel =
-    [ Combo.seq (Combo.char 'a' "add...")
-        [ Combo.char 'v' "property"
-        , Combo.char 'p' "paragraph"
-        , Combo.char 'h' "heading"
-        , Combo.char 't' "task"
-        , Combo.char 'i' "item"
+    [ Combo.seq (Combo.char 'a' "add..." None)
+        [ Combo.char 'v' "property" None
+        , Combo.char 'p' "paragraph" None
+        , Combo.char 'h' "heading" AddHeading
+        , Combo.char 't' "task" None
+        , Combo.char 'i' "item" None
         ]
-    , Combo.char 'g' "agenda"
+    , Combo.char 'g' "agenda" None
     ]
 
 
-headingSelected :: Array Combo
+headingSelected :: Array (Combo Action)
 headingSelected =
-    [ Combo.char 'e' "edit heading"
-    , Combo.code 45 "->" "level deep"
-    , Combo.code 45 "<-" "level higher" -- If not at the top
-    , Combo.code 43 "" "move down"
-    , Combo.code 41 "" "move up"
-    , Combo.mod Mod.shift (Combo.kcode 45 "->") "cycle todo level fwd"
-    , Combo.mod Mod.shift (Combo.kcode 42 "<-") "cycle todo level back"
-    , Combo.mod Mod.shift (Combo.kcode 45 "") "priority up"
-    , Combo.mod Mod.shift (Combo.kcode 42 "") "priority down"
-    , Combo.char 's' "schedule"
-    , Combo.char 'd' "deadline"
-    , Combo.char 'r' "repeat"
-    , Combo.char 't' "timestamp"
+    [ Combo.char 'e' "edit heading" None
+    , Combo.code 45 "->" "level deep" None
+    , Combo.code 45 "<-" "level higher" None -- If not at the top
+    , Combo.code 43 "" "move down" None
+    , Combo.code 41 "" "move up" None
+    , Combo.mod Mod.shift (Combo.kcode 45 "->") "cycle todo level fwd" None
+    , Combo.mod Mod.shift (Combo.kcode 42 "<-") "cycle todo level back" None
+    , Combo.mod Mod.shift (Combo.kcode 45 "") "priority up" None
+    , Combo.mod Mod.shift (Combo.kcode 42 "") "priority down" None
+    , Combo.char 's' "schedule" None
+    , Combo.char 'd' "deadline" None
+    , Combo.char 'r' "repeat" None
+    , Combo.char 't' "timestamp" None
     -- TODO: sequence to edit todo manually
     -- TODO: sequence to edit priority manually
     ]

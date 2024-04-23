@@ -33,13 +33,20 @@ data Key
 derive instance Eq Key
 
 
-data Combo
-    = Single Key String
-    | WithModifier Modifier Key String
-    | Sequence Combo (Array Combo)
+data Combo a
+    = Single Key String a
+    | WithModifier Modifier Key String a
+    | Sequence (Combo a) (Array (Combo a))
 
 
-seq :: Combo -> Array Combo -> Combo
+get :: forall a. Combo a -> a
+get = case _ of
+    Single _ _ a -> a
+    WithModifier _ _ _ a -> a
+    Sequence combo _ -> get combo
+
+
+seq :: forall a. Combo a -> Array (Combo a) -> Combo a
 seq = Sequence
 
 
@@ -55,7 +62,7 @@ opt :: Modifier
 opt = Option
 
 
-char :: Char -> String -> Combo
+char :: forall a. Char -> String -> a -> Combo a
 char = Single <<< Alpha
 
 
@@ -63,18 +70,18 @@ kcode :: Int -> String -> Key
 kcode = Special
 
 
-code :: Int -> String -> String -> Combo
+code :: forall a. Int -> String -> String -> a -> Combo a
 code n = Single <<< Special n
 
 
-mod :: Modifier -> Key -> String -> Combo
+mod :: forall a. Modifier -> Key -> String -> a -> Combo a
 mod = WithModifier
 
 
-data Match
+data Match a
     = None
-    | Exact Combo
-    | Wait Combo (Array Combo)
+    | Exact (Combo a)
+    | Wait (Combo a) (Array (Combo a))
 
 
 type KeyEvent =
@@ -83,16 +90,16 @@ type KeyEvent =
     }
 
 
-matches :: Array Combo -> KeyEvent -> Match
+matches :: forall a. Array (Combo a) -> KeyEvent -> (Match a)
 matches combos kevt = Array.foldr checkCombo None combos
     where
-        checkCombo :: Combo -> Match -> Match
+        checkCombo :: Combo a -> Match a -> Match a
         checkCombo combo None =
             case combo of
-                Single key _ ->
+                Single key _ _ ->
                     if Set.isEmpty kevt.modifiers && key == kevt.key then Exact combo
                     else None
-                WithModifier mod key _ ->
+                WithModifier mod key _ _ ->
                     if Set.member mod kevt.modifiers then
                         if key == kevt.key then Exact combo else None
                     else None

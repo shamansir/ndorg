@@ -58,3 +58,9 @@ html, body {
     display: inline-block;
     margin-left: 5px;
 }
+
+.ndorg-curkey {
+    position: fixed;
+    top: 5px;
+    right : 5px;
+}
