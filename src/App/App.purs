@@ -47,7 +47,7 @@ import App.Component.OrgFilePreview as PreviewC
 
 type Slots =
     ( "org-editor" :: EditorC.Slot Unit
-    , preview :: PreviewC.Slot Unit
+    , "org-preview" :: PreviewC.Slot Unit
     )
 
 
@@ -87,7 +87,9 @@ render state =
         ]
     , HH.div
         [ HP.class_ $ cn "ndorg-preview" ]
-        [ HH.span [ HP.class_ $ cn "ndorg-hint" ] [ HH.text "Press a key..." ] ]
+        [ HH.span [ HP.class_ $ cn "ndorg-hint" ] [ HH.text "Press a key..." ]
+        , HH.slot_ PreviewC._preview unit PreviewC.component unit
+        ]
     , HH.div
         [ HP.class_ $ cn "ndorg-suggest" ]
         $ ComboC.render <$> AppState.suggestions state.context
