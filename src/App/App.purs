@@ -11,6 +11,7 @@ import Data.Traversable (traverse_)
 import Control.Monad.State (get, modify, modify_) as State
 
 import Effect (Effect)
+import Effect.Class (class MonadEffect)
 import Effect.Aff.Class (class MonadAff)
 
 import Halogen as H
@@ -40,6 +41,15 @@ import App.Keys (Match, matches) as Keys
 import App.Keys (get) as Combo
 import App.Keys (Match(..)) as Match
 
+import App.Component.OrgFileEditor as EditorC
+import App.Component.OrgFilePreview as PreviewC
+
+
+type Slots =
+    ( "org-editor" :: EditorC.Slot Unit
+    , preview :: PreviewC.Slot Unit
+    )
+
 
 component :: forall q i o m. MonadAff m => H.Component q i o m
 component =
@@ -52,7 +62,8 @@ component =
         }
     }
 
-render :: forall cs m. State -> H.ComponentHTML Action cs m
+
+render :: forall m. MonadEffect m => State -> H.ComponentHTML Action Slots m
 render state =
   HH.div
     {- HH.p_
@@ -70,7 +81,10 @@ render state =
     [ HP.class_ $ cn "ndorg" ]
     [ HH.div
         [ HP.class_ $ cn "ndorg-editor" ]
-        [ HH.span [ HP.class_ $ cn "ndorg-hint" ] [ HH.text "Press a key..." ] ]
+        [ HH.span [ HP.class_ $ cn "ndorg-hint" ]
+        [ HH.text "Press a key..." ]
+        , HH.slot_ EditorC._editor unit EditorC.component unit
+        ]
     , HH.div
         [ HP.class_ $ cn "ndorg-preview" ]
         [ HH.span [ HP.class_ $ cn "ndorg-hint" ] [ HH.text "Press a key..." ] ]

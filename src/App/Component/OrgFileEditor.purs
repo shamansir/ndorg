@@ -2,6 +2,8 @@ module App.Component.OrgFileEditor where
 
 import Prelude
 
+import Type.Proxy (Proxy(..))
+
 import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Console (log) as Console
 
@@ -14,6 +16,18 @@ import Halogen.HTML.Events as HE
 
 
 import App.Component.OrgFileEditor.Section as SectionC
+
+
+_editor = Proxy :: _ "org-editor"
+
+
+type Slot = H.Slot Query Output
+
+
+data Query a = Query a
+
+
+type Output = Unit
 
 
 type State =
@@ -32,7 +46,7 @@ data Action
     | HandleSection Int SectionC.Output
 
 
-component :: forall query input output m. MonadEffect m => H.Component query input output m
+component :: forall input m. MonadEffect m => H.Component Query input Output m
 component =
   H.mkComponent
     { initialState
@@ -62,9 +76,10 @@ component =
       , HH.slot _section 1 section { section : sampleSec } $ HandleSection 1
         -- We render our third button with the slot id 2
       , HH.slot _section 2 section { section : sampleSec } $ HandleSection 2
+      , HH.text "foo"
       ]
 
-  handleAction :: Action -> H.HalogenM State Action Slots output m Unit
+  handleAction :: Action -> H.HalogenM State Action Slots Output m Unit
   handleAction = case _ of
     Action -> pure unit
     -- We handle one action, `HandleButton`, which itself handles the output messages
