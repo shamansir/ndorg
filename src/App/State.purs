@@ -8,6 +8,7 @@ import Data.Maybe (Maybe(..))
 
 
 import Data.Text.Format.Org.Types (OrgFile)
+import Data.Text.Format.Org.Path (Path(..))
 import Data.Text.Format.Org.Construct (empty) as Org
 
 import App.Action (Action(..))
@@ -25,28 +26,12 @@ data Context
     | EditingWords
 
 
-data PathItem =
-    Top
-
-
-data Path
-    = Nowhere
-    | Block Int
-    | Section Int
-    | Property Int
-    | Word Int
-    | Deeper Path Path
-
-
-data Focus = Focus Path
-
-
 -- TODO: undo history
 
 
 type State =
     { context :: Context
-    , focus :: Focus
+    , focus :: Path Int
     , file :: OrgFile
     , curKey :: Maybe KeyEvent
     }
@@ -55,7 +40,7 @@ type State =
 init :: State
 init =
     { context : TopLevel
-    , focus : Focus Nowhere
+    , focus : Root
     , file : Org.empty
     , curKey : Nothing
     }

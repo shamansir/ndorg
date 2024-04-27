@@ -79,7 +79,8 @@ render state =
         ]
     , -}
     [ HP.class_ $ cn "ndorg" ]
-    [ HH.div
+    [ HH.div [ HP.class_ $ cn "ndorg-path" ] [ HH.text $ show state.focus ]
+    , HH.div
         [ HP.class_ $ cn "ndorg-editor" ]
         [ HH.span [ HP.class_ $ cn "ndorg-hint" ]
         [ HH.text "Press a key..." ]
