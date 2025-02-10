@@ -6,11 +6,11 @@ import Type.Proxy (Proxy(..))
 
 import Data.Maybe (Maybe(..))
 import Data.Array ((:), replicate)
-import Data.String (joinWith) as String
+import Data.String (joinWith, fromCodePointArray, codePointFromChar) as String
 
 import Data.FunctorWithIndex (mapWithIndex)
 
-import Data.Text.Format.Org.Types (Section(..), OrgDoc(..), Drawer(..))
+import Data.Text.Format.Org.Types (Section(..), OrgDoc(..), Drawer(..), Todo(..), Priority(..), Cookie(..), Check(..))
 
 import Halogen as H
 import Halogen.HTML as HH
@@ -126,34 +126,52 @@ renderSectionHeader =
           [ HP.classes [ cn "ndorg-heading", cn $ "ndorg-heading-" <> show section.level ]
           ]
           [ HH.span [ HP.class_ $ cn "ndorg-heading-marker" ] [ HH.text $ headingMarker section.level ]  -- FIXME: use css:before for marker
+          , case section.todo of
+            Just todo -> case todo of
+              Todo -> HH.span [ HP.class_ $ cn "ndorg-todo" ] [ HH.text "TODO" ]
+              Doing -> HH.span [ HP.class_ $ cn "ndorg-doing" ] [ HH.text "DOING" ]
+              Done -> HH.span [ HP.class_ $ cn "ndorg-done" ] [ HH.text "DONE" ]
+              Now -> HH.span [ HP.class_ $ cn "ndorg-now" ] [ HH.text "NOW" ]
+              CustomKW kw -> HH.span [ HP.class_ $ cn "ndorg-custom" ] [ HH.text kw ]
+            Nothing -> HH.none
+          , case section.priority of
+            Just (Alpha 'A') -> HH.span [ HP.class_ $ cn "ndorg-priority-top" ] [ HH.text "[A]" ]
+            Just (Alpha 'B') -> HH.span [ HP.class_ $ cn "ndorg-priority-middle" ] [ HH.text "[B]" ]
+            Just (Alpha 'C') -> HH.span [ HP.class_ $ cn "ndorg-priority-low" ] [ HH.text "[C]" ]
+            Just (Alpha char) -> HH.span [ HP.class_ $ cn "ndorg-priority-uncertain" ] [ HH.text $ String.fromCodePointArray [ String.codePointFromChar char ] ]
+            Just (Num 1) -> HH.span [ HP.class_ $ cn "ndorg-priority-top" ] [ HH.text "[#1]" ]
+            Just (Num 2) -> HH.span [ HP.class_ $ cn "ndorg-priority-middle" ] [ HH.text "[#2]" ]
+            Just (Num 3) -> HH.span [ HP.class_ $ cn "ndorg-priority-low" ] [ HH.text "[#3]" ]
+            Just (Num n) -> HH.span [ HP.class_ $ cn "ndorg-priority-uncertain" ] [ HH.text $ "#" <> show n ]
+            Nothing ->  HH.none
+          , case section.cookie of
+            Just Split -> HH.span [ HP.class_ $ cn "ndorg-cookie" ] [ HH.text "[/]" ]
+            Just Percent -> HH.span [ HP.class_ $ cn "ndorg-cookie" ] [ HH.text "[%]" ]
+            Just Pie -> HH.span [ HP.class_ $ cn "ndorg-cookie" ] [ HH.text "[/]" ]
+            Nothing ->  HH.none
+          , case section.check of
+            Just Check -> HH.span [ HP.class_ $ cn "ndorg-check" ] [ HH.text "[X]" ]
+            Just Uncheck -> HH.span [ HP.class_ $ cn "ndorg-uncheck" ] [ HH.text "[ ]" ]
+            Just Halfcheck -> HH.span [ HP.class_ $ cn "ndorg-halfcheck" ] [ HH.text "[-]" ]
+            Nothing ->  HH.none
           , HH.text " "
           , HH.slot WordsC._words unit WordsC.component { words : section.heading, kind : WordsC.Inline } $ HandleWords 0
           ]
-        , case section.todo of
-          Just todo -> HH.text "todo"
-          Nothing -> HH.none
-        , case section.priority of
-          Just priority -> HH.text "priority"
-          Nothing ->  HH.none
-        , case section.cookie of
-          Just cookie -> HH.text "cookie"
-          Nothing ->  HH.none
-        , case section.check of
-          Just check -> HH.text "check"
-          Nothing ->  HH.none
         , case section.tags of
           [] ->  HH.none
-          tags -> HH.span [] $ HH.text <$> tags
+          tags -> HH.span [ HP.class_ $ cn "ndorg-tags" ] $ renderTag <$> tags
         , case section.drawers of
           [] ->  HH.none
-          drawers -> HH.div [] $ renderDrawer <$> drawers
+          drawers -> HH.div [ HP.class_ $ cn "ndorg-drawer" ] $ renderDrawer <$> drawers
         , if PlanningC.hasPlanning section.planning
           then PlanningC.renderPlanning section.planning
           else  HH.none
         , KeywordsC.renderKeywords section.props
         , if section.comment then HH.text "comment" else  HH.none
         ]
-  where headingMarker level = String.joinWith "" $ replicate level "*"
+  where
+    renderTag tag = HH.span [ HP.class_ $ cn "ndorg-tag" ] [ HH.text tag ]
+    headingMarker level = String.joinWith "" $ replicate level "*"
 
 
 renderDrawer :: forall action slots m. Drawer -> H.ComponentHTML action slots m

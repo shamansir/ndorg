@@ -184,6 +184,20 @@ html, body {
     opacity: 0.75;
 }
 
+.ndorg-todo, .ndorg-done, .ndorg-doing, .ndorg-now, .ndorg-custom {
+    font-size: 10px;
+    line-height: 0.85em;
+    position: relative;
+    top: -1px;
+    margin: 0 -1px 3px 6px;
+}
+
+.ndorg-todo { color: #e64553; }
+.ndorg-done { color: #1e66f5; }
+.ndorg-doing { color: #8839ef; }
+.ndorg-now { color: #ea76cb; }
+.ndorg-custom { color: #b7bdf8; }
+
 .combo {
     margin-bottom: 5px;
 }
