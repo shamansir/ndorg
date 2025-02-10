@@ -1,10 +1,11 @@
-module App.Component.OrgFileEditor.Section where
+module App.Component.OrgFileEditor.DocAndSection where
 
 import Prelude
 
 import Type.Proxy (Proxy(..))
 
 import Data.Maybe (Maybe(..))
+import Data.Array ((:))
 
 import Data.FunctorWithIndex (mapWithIndex)
 
@@ -74,9 +75,10 @@ secComponent = H.mkComponent
   -- we will evaluate the `Click` action.
   render :: SecState -> H.ComponentHTML SecAction SecSlots m
   render { section, editing } =
-    HH.h1
+    HH.div
       [ HE.onClick \_ -> SecAction ]
       [ HH.text $ "Section: " <> " (" <> (if editing then "on" else "off") <> ")"
+      , renderSectionHeader section
       , case section of
         Section { doc } -> HH.slot _doc 0 docComponent { doc } HandleDoc
       -- HH.slot KeywordsC._keywords 0 KeywordsC.component { keywords : meta } HandleMeta
@@ -115,6 +117,35 @@ secComponent = H.mkComponent
       pure (Just (reply editing))
 
 
+renderSectionHeader :: forall m. Section -> H.ComponentHTML SecAction SecSlots m
+renderSectionHeader =
+  case _ of
+    Section section ->
+      HH.div []
+        [ HH.text $ show section.level
+        , HH.text "heading"
+        , case section.todo of
+          Just todo -> HH.text "todo"
+          Nothing -> HH.text "-"
+        , case section.priority of
+          Just priority -> HH.text "priority"
+          Nothing -> HH.text "-"
+        , case section.cookie of
+          Just cookie -> HH.text "cookie"
+          Nothing -> HH.text "-"
+        , case section.check of
+          Just check -> HH.text "check"
+          Nothing -> HH.text "-"
+        , case section.tags of
+          tags -> HH.text "tags"
+          [] -> HH.text "-"
+        -- TODO: section.planning
+        -- TODO: section.props
+        -- TODO: section.drawers
+        , if section.comment then HH.text "comment" else HH.text "-"
+        ]
+
+
 
 _doc = Proxy :: _ "doc"
 
@@ -143,7 +174,7 @@ type DocState =
 
 
 type DocSlots =
-    ( blocks :: BlockC.Slot Int
+    ( block :: BlockC.Slot Int
     , section :: SecSlot Int
     )
 
@@ -152,6 +183,7 @@ data DocAction
     = DocAction
     | DocReceive DocInput
     | HandleSection Int SecOutput
+    | HandleBlock Int BlockC.Output
 
 
 docComponent :: forall m. H.Component DocQuery DocInput DocOutput m
@@ -174,16 +206,18 @@ docComponent = H.mkComponent
   -- we will evaluate the `Click` action.
   render :: DocState -> H.ComponentHTML DocAction DocSlots m
   render { doc, editing } =
-    HH.h1
+    HH.div
       [ HE.onClick \_ -> DocAction ]
-      (
-      [ HH.text $ "Doc: " <> " (" <> (if editing then "on" else "off") <> ")"
-      ]
-      <> case doc of
+      $ (HH.text $ "Doc: " <> " (" <> (if editing then "on" else "off") <> ")")
+      : case doc of
         OrgDoc { zeroth, sections } ->
-          mapWithIndex (\idx section -> HH.slot _section idx secComponent { section } $ HandleSection idx) sections
+          [ HH.div [] $ mapWithIndex (\idx block -> HH.slot BlockC._block idx BlockC.component { block } $ HandleBlock idx) zeroth
+          , HH.div [] $ mapWithIndex (\idx section -> HH.slot _section idx secComponent { section } $ HandleSection idx) sections
+          ]
+            -- [ HH.div [] $ mapWithIndex (\idx block -> HH.slot BlockC._block idx BlockC.component { block } $ HandleBlock idx) zeroth
+            -- , HH.div [] $ mapWithIndex (\idx section -> HH.slot _section idx secComponent { section } $ HandleSection idx) sections
+            -- ]
           -- HH.slot KeywordsC._keywords 0 KeywordsC.component { keywords : meta } HandleMeta
-      )
 
   handleAction
     :: DocAction
@@ -200,6 +234,9 @@ docComponent = H.mkComponent
       H.raise DocOutput
 
     HandleSection _ _ ->
+      pure unit
+
+    HandleBlock _ _ ->
       pure unit
 
   handleQuery

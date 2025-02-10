@@ -64,7 +64,7 @@ component = H.mkComponent
   -- we will evaluate the `Click` action.
   render :: State -> H.ComponentHTML Action () m
   render { words, editing } =
-    HH.h1
+    HH.div
       [ HE.onClick \_ -> Action ]
       [ HH.text $ "Words: " <> "(" <> (if editing then "on" else "off") <> ")" ]
 

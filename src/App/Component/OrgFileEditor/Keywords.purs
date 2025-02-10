@@ -6,7 +6,7 @@ import Type.Proxy (Proxy(..))
 
 import Data.Maybe (Maybe(..))
 
-import Data.Text.Format.Org.Keywords (Keywords)
+import Data.Text.Format.Org.Keywords (Keywords(..), Keyword(..))
 -- import Data.Text.Format.Org.Types (Keywords)
 
 import Halogen as H
@@ -65,9 +65,11 @@ component = H.mkComponent
   -- we will evaluate the `Click` action.
   render :: State -> H.ComponentHTML Action () m
   render { keywords, editing } =
-    HH.h1
+    HH.div
       [ HE.onClick \_ -> Action ]
-      [ HH.text $ "Keywords: " <> " (" <> (if editing then "on" else "off") <> ")" ]
+      [ HH.text $ "Keywords: " <> " (" <> (if editing then "on" else "off") <> ")"
+      , renderKeywords keywords
+      ]
 
   handleAction
     :: Action
@@ -99,3 +101,22 @@ component = H.mkComponent
     GetEditing reply -> do
       editing <- H.gets _.editing
       pure (Just (reply editing))
+
+
+renderKeywords :: forall m. Keywords String -> H.ComponentHTML Action () m
+renderKeywords = case _ of
+  Keywords keywords -> HH.div [] $ renderKeyword <$> keywords
+
+
+renderKeyword :: forall m. Keyword String -> H.ComponentHTML Action () m
+renderKeyword = case _ of
+  Keyword { name, value, default } ->
+    HH.div []
+      [ HH.span [] [ HH.text name ]
+      , HH.span [] [ HH.text $ case value of
+        Just val -> val
+        Nothing -> "-" ]
+      , HH.span [] [ HH.text $ case default of
+        Just def -> def
+        Nothing -> "-" ]
+      ]

@@ -16,7 +16,7 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 
-import App.Component.OrgFileEditor.Section as DocC
+import App.Component.OrgFileEditor.DocAndSection as DocC -- only Doc component is used here
 import App.Component.OrgFileEditor.Keywords as KeywordsC
 
 

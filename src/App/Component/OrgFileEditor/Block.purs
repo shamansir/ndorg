@@ -5,8 +5,9 @@ import Prelude
 import Type.Proxy (Proxy(..))
 
 import Data.Maybe (Maybe(..))
+import Data.Array (singleton) as Array
 
-import Data.Text.Format.Org.Types (Block)
+import Data.Text.Format.Org.Types (Block(..))
 
 import Halogen as H
 import Halogen.HTML as HH
@@ -64,9 +65,11 @@ component = H.mkComponent
   -- we will evaluate the `Click` action.
   render :: State -> H.ComponentHTML Action () m
   render { block, editing } =
-    HH.h1
+    HH.div
       [ HE.onClick \_ -> Action ]
-      [ HH.text $ "Block : (" <> (if editing then "on" else "off") <> ")" ]
+      [ HH.text $ "Block : (" <> (if editing then "on" else "off") <> ")"
+      , renderBlock block
+      ]
 
   handleAction
     :: Action
@@ -98,3 +101,20 @@ component = H.mkComponent
     GetEditing reply -> do
       editing <- H.gets _.editing
       pure (Just (reply editing))
+
+
+renderBlock :: forall m. Block -> H.ComponentHTML Action () m
+renderBlock =
+    case _ of
+      Of kind words -> [ HH.text "of" ]
+      IsDrawer drawer -> [ HH.text "drawer" ]
+      Footnote name words -> [ HH.text "footnote" ]
+      List items -> [ HH.text "list" ]
+      Table header rows -> [ HH.text "table" ]
+      Paragraph words -> [ HH.text "para" ]
+      WithKeyword kw block -> [ HH.text "kw" ]
+      HRule -> [ HH.text "hr" ]
+      LComment text -> [ HH.text "lcomment" ]
+      FixedWidth words -> [ HH.text "fixedw" ]
+      JoinB blockA blockB -> [ renderBlock blockA, renderBlock blockB ]
+    >>> HH.div []
