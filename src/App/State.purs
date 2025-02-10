@@ -9,6 +9,7 @@ import Data.Maybe (Maybe(..))
 
 import Data.Text.Format.Org.Types (OrgFile)
 import Data.Text.Format.Org.Path (Path(..))
+import Data.Text.Format.Org.Path (root) as Path
 import Data.Text.Format.Org.Construct (empty) as Org
 
 import App.Action (Action(..))
@@ -40,7 +41,7 @@ type State =
 init :: State
 init =
     { context : TopLevel
-    , focus : Root
+    , focus : Path.root
     , file : Org.empty
     , curKey : Nothing
     }
