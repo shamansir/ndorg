@@ -5,10 +5,13 @@ import Prelude
 import Type.Proxy (Proxy(..))
 
 import Data.Maybe (Maybe(..))
+import Data.Array ((:))
 import Data.Array (singleton) as Array
+import Data.Array.NonEmpty (toArray) as NEA
 import Data.String (joinWith) as String
 
-import Data.Text.Format.Org.Types (Block(..), BlockKind(..), Language(..))
+import Data.Text.Format.Org.Types (Block(..), BlockKind(..), Language(..), Check(..), Counter(..), Drawer(..))
+import Data.Text.Format.Org.Types (ListItems(..), ListType(..), Item(..)) as OrgList
 
 import Halogen as H
 import Halogen.HTML as HH
@@ -16,6 +19,7 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 
 import App.Utils (cn, cn_editing)
+import App.Utils (none) as HH
 import App.Component.OrgFileEditor.Words as WordsC
 
 
@@ -99,7 +103,7 @@ component = H.mkComponent
       pure (Just (reply editing))
 
 
-renderBlock :: forall action m. Block -> H.ComponentHTML action () m
+renderBlock :: forall action slots m. Block -> H.ComponentHTML action slots m
 renderBlock =
     case _ of
       Of Quote words ->
@@ -126,9 +130,9 @@ renderBlock =
           startMark = text <> " " <> String.joinWith " " params
           endMark = text
         in [ blockDiv_ "custom" $ blockStartEnd_ startMark endMark $ WordsC.renderWordsNEA words ]
-      IsDrawer drawer -> [ HH.text "drawer" ]
+      IsDrawer drawer -> [ renderDrawer drawer ]
       Footnote name words -> [ HH.text "footnote", WordsC.renderWordsNEA words ]
-      List items -> [ HH.text "list" ]
+      List items -> [ renderList items ]
       Table header rows -> [ HH.text "table" ]
       Paragraph words ->
         [ blockDiv "para" $ WordsC.renderWordsNEA words ]
@@ -147,3 +151,64 @@ renderBlock =
         ]
       blockDiv_ class_ = HH.div [ HP.class_ $ cn $ "ndorg-block-" <> class_ ]
       blockDiv class_ inner = blockDiv_ class_ [ inner ]
+
+
+renderDrawer :: forall action slots m. Drawer -> H.ComponentHTML action slots m
+renderDrawer =
+  case _ of
+    Drawer { name, content } ->
+      HH.div
+        [ HP.class_ $ cn "ndorg-drawer" ]
+        [ HH.div [ HP.class_ $ cn "ndorg-drawer-name" ] [ HH.text name ]
+        , HH.div [ HP.class_ $ cn "ndorg-drawer-content" ]
+            [ WordsC.renderWordsNEA content ]
+        ]
+
+
+renderList :: forall action slots m. OrgList.ListItems -> H.ComponentHTML action slots m
+renderList =
+  case _ of
+    OrgList.ListItems ltype items ->
+      HH.div
+        [ HP.classes [ cn $ "ndorg-list", cn $ "ndorg-list-" <> listTypeClass ltype ]
+        ]
+        $ NEA.toArray $ renderItem <$> items
+  where
+    renderItem = case _ of
+      OrgList.Item def words mbSubitems ->
+        HH.div
+          [ HP.class_ $ cn "ndorg-list-item" ]
+          $ case def.check of
+            Just Check     -> HH.span [ HP.class_ $ cn "ndorg-check" ]   [ HH.text "[X]" ]
+            Just Uncheck   -> HH.span [ HP.class_ $ cn "ndorg-uncheck" ] [ HH.text "[ ]" ]
+            Just Halfcheck -> HH.span [ HP.class_ $ cn "ndorg-uncheck" ] [ HH.text "[-]" ]
+            Nothing -> HH.none
+          : case def.counter of
+            Just (Counter n) -> HH.span [ HP.class_ $ cn "ndorg-counter" ] [ HH.text $ "(" <> show n <> ")" ]
+            Nothing -> HH.none
+          : HH.span [ HP.class_ $ cn "ndorg-list-item-content" ]
+            [ WordsC.renderWordsNEA words ]
+          : case def.tag of
+            Just tag -> HH.span [ HP.class_ $ cn "ndorg-tag" ] [ HH.text tag ]
+            Nothing -> HH.none
+          : case def.drawers of
+            [] -> HH.none
+            drawers ->
+              HH.div
+                [ HP.class_ $ cn "ndorg-list-item-drawers" ]
+                $ renderDrawer <$> drawers
+          : case mbSubitems of
+            Nothing -> []
+            Just subItems ->
+              [ HH.div
+                [ HP.class_ $ cn "ndorg-list-item-continue" ]
+                [ renderList subItems ]
+              ]
+
+    listTypeClass = case _ of
+      OrgList.Bulleted -> "bulleted"
+      OrgList.Numbered -> "numbered"
+      OrgList.NumberedFrom _ -> "numbered"
+      OrgList.Hyphened -> "hyphened"
+      OrgList.Alphed -> "alphed"
+      OrgList.Plussed -> "plussed"

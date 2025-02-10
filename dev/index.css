@@ -280,6 +280,47 @@ html, body {
     background-color: rgba(255,255,255,0.05);
 }
 
+.ndorg-list {
+    margin: 10px 2px 2px 12px;
+}
+
+.ndorg-list-item-continue .ndorg-list {
+    margin: 6px 2px 6px 20px;
+}
+
+.ndorg-list-item-content {
+    margin-left: 5px;
+}
+
+.ndorg-list-bulleted { list-style-type: disc; }
+.ndorg-list-numbered { list-style-type: decimal; }
+.ndorg-list-hyphened { list-style-type: "-"; }
+.ndorg-list-alphed { list-style-type: lower-alpha; }
+.ndorg-list-plussed { list-style-type: "+"; }
+
+.ndorg-check, .ndorg-uncheck, .ndorg-halfcheck, .ndorg-counter {
+    padding : 0 5px;
+    font-size: 0.8em;
+    opacity: 0.8;
+}
+
+
+.ndorg-list-item {
+    display: list-item;
+    line-height: 1.6em;
+}
+
+.ndorg-list-item::marker {
+    /* opacity: 0.8; */
+    color: darkgray;
+    margin: 0;
+    padding: 0;
+}
+
+.ndorg-list-item-continue .ndorg-list-item::marker {
+    /* margin-right: 4px; */
+}
+
 .combo {
     margin-bottom: 5px;
 }
