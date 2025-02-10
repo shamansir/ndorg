@@ -123,7 +123,7 @@ renderSectionHeader =
     Section section ->
       HH.div [ HP.class_ $ cn "ndorg-section" ]
         [ HH.span
-          [ HP.classes [ cn "ndorg-heading", cn $ "ndorg-heading-" <> show section.level ]
+          [ HP.classes [ cn "ndorg-heading", cn $ "ndorg-heading-" <> show section.level, cn $ if section.comment then "ndorg-comment" else "ndorg-none" ]
           ]
           [ HH.span [ HP.class_ $ cn "ndorg-heading-marker" ] [ HH.text $ headingMarker section.level ]  -- FIXME: use css:before for marker
           , case section.todo of
@@ -167,7 +167,6 @@ renderSectionHeader =
           then PlanningC.renderPlanning section.planning
           else  HH.none
         , KeywordsC.renderKeywords section.props
-        , if section.comment then HH.text "comment" else  HH.none
         ]
   where
     renderTag tag = HH.span [ HP.class_ $ cn "ndorg-tag" ] [ HH.text tag ]
