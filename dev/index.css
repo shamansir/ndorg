@@ -247,6 +247,39 @@ html, body {
 
 .ndorg-markup-link a { color: aqua; }
 
+.ndorg-block-fixed-width  {
+    font-family : monospace;
+    font-size : 12px;
+    line-height : 1.4em;
+    padding: 3px 6px;
+    background-color: rgba(255,255,255,0.1);
+}
+
+.ndorg-block {
+    margin: 7px 0;
+}
+
+.ndorg-block-code {
+    color: burlywood;
+}
+
+.ndorg-block-center .ndorg-block-content {
+    padding: 7px 30%;
+}
+
+.ndorg-block-start-end {
+    display: block;
+    font-size: 0.8em;
+    opacity: 0.5;
+}
+
+.ndorg-block-content {
+    display: block;
+    padding: 7px 10px;
+    border-radius: 3px;
+    background-color: rgba(255,255,255,0.05);
+}
+
 .combo {
     margin-bottom: 5px;
 }

@@ -6,8 +6,9 @@ import Type.Proxy (Proxy(..))
 
 import Data.Maybe (Maybe(..))
 import Data.Array (singleton) as Array
+import Data.String (joinWith) as String
 
-import Data.Text.Format.Org.Types (Block(..))
+import Data.Text.Format.Org.Types (Block(..), BlockKind(..), Language(..))
 
 import Halogen as H
 import Halogen.HTML as HH
@@ -101,19 +102,48 @@ component = H.mkComponent
 renderBlock :: forall action m. Block -> H.ComponentHTML action () m
 renderBlock =
     case _ of
-      Of kind words -> [ HH.text "of", WordsC.renderWordsNEA words ]
+      Of Quote words ->
+        [ blockDiv_ "quote" $ blockStartEnd "QUOTE" $ WordsC.renderWordsNEA words ]
+      Of Example words ->
+        [ blockDiv_ "example" $ blockStartEnd "EXAMPLE" $ WordsC.renderWordsNEA words ]
+      Of Center words ->
+        [ blockDiv_ "center" $ blockStartEnd "CENTER" $ WordsC.renderWordsNEA words ]
+      Of Verse words ->
+        [ blockDiv_ "verse" $ blockStartEnd "VERSE" $ WordsC.renderWordsNEA words ]
+      Of Export words ->
+        [ blockDiv_ "export" $ blockStartEnd "EXPORT" $ WordsC.renderWordsNEA words ]
+      Of Comment words ->
+        [ blockDiv_ "comment" $ blockStartEnd "COMMENT" $ WordsC.renderWordsNEA words ]
+      Of (Code mbLang) words ->
+        let
+          startMark = "SRC" <> case mbLang of
+            Just (Language lang) -> " " <> lang
+            Nothing -> ""
+          endMark = "SRC"
+        in [ blockDiv_ "code" $ blockStartEnd_ startMark endMark $ WordsC.renderWordsNEA words ]
+      Of (Custom text params) words ->
+        let
+          startMark = text <> " " <> String.joinWith " " params
+          endMark = text
+        in [ blockDiv_ "custom" $ blockStartEnd_ startMark endMark $ WordsC.renderWordsNEA words ]
       IsDrawer drawer -> [ HH.text "drawer" ]
       Footnote name words -> [ HH.text "footnote", WordsC.renderWordsNEA words ]
       List items -> [ HH.text "list" ]
       Table header rows -> [ HH.text "table" ]
       Paragraph words ->
-        [ HH.div
-          [ HP.class_ $ cn "ndorg-block-para" ]
-          [ WordsC.renderWordsNEA words ]
-        ]
+        [ blockDiv "para" $ WordsC.renderWordsNEA words ]
       WithKeyword kw block -> [ HH.text "kw", renderBlock block ]
-      HRule -> [ HH.text "hr" ]
+      HRule -> [ HH.hr [] ]
       LComment text -> [ HH.text "lcomment" ]
-      FixedWidth words -> [ HH.text "fixedw", WordsC.renderWordsNEA words ]
+      FixedWidth words -> [ HH.div [ HP.class_ $ cn "ndorg-block-fixed-width" ] [ WordsC.renderWordsNEA words ] ]
       JoinB blockA blockB -> [ renderBlock blockA, renderBlock blockB ]
     >>> HH.div [ HP.class_ $ cn "ndorg-block" ]
+    where
+      blockStartEnd bname = blockStartEnd_ bname bname
+      blockStartEnd_ bstart bend inner =
+        [ HH.span [ HP.class_ $ cn "ndorg-block-start-end" ] [ HH.text $ "#+BEGIN_" <> bstart ]
+        , HH.span [ HP.class_ $ cn "ndorg-block-content" ] [ inner ]
+        , HH.span [ HP.class_ $ cn "ndorg-block-start-end" ] [ HH.text $ "#+END_" <> bend ]
+        ]
+      blockDiv_ class_ = HH.div [ HP.class_ $ cn $ "ndorg-block-" <> class_ ]
+      blockDiv class_ inner = blockDiv_ class_ [ inner ]
