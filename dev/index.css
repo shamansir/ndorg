@@ -3,6 +3,8 @@ html, body {
     height: 100%;
     padding: 0;
     margin: 0;
+    background-color : #333333;
+    color: #bbb;
 }
 
 .ndorg {
@@ -19,9 +21,10 @@ html, body {
 
 .ndorg-preview {
     width : 30%;
-    background: #eee;
+    background: #111;
     min-height: 200px;
     padding: 10px;
+    color: #666;
 }
 
 .ndorg-suggest {
@@ -33,7 +36,7 @@ html, body {
     border: 2px solid black;
     padding: 10px;
     border-radius: 10px;
-    background-color: #999;
+    background-color: #777;
     color: #eee;
 }
 

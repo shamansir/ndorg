@@ -13,6 +13,8 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 
+import App.Component.OrgFileEditor.Words as WordsC
+
 
 type Slot = H.Slot Query Output
 
@@ -103,18 +105,18 @@ component = H.mkComponent
       pure (Just (reply editing))
 
 
-renderBlock :: forall m. Block -> H.ComponentHTML Action () m
+renderBlock :: forall action m. Block -> H.ComponentHTML action () m
 renderBlock =
     case _ of
-      Of kind words -> [ HH.text "of" ]
+      Of kind words -> [ HH.text "of", WordsC.renderWordsNEA words ]
       IsDrawer drawer -> [ HH.text "drawer" ]
-      Footnote name words -> [ HH.text "footnote" ]
+      Footnote name words -> [ HH.text "footnote", WordsC.renderWordsNEA words ]
       List items -> [ HH.text "list" ]
       Table header rows -> [ HH.text "table" ]
-      Paragraph words -> [ HH.text "para" ]
-      WithKeyword kw block -> [ HH.text "kw" ]
+      Paragraph words -> [ HH.text "para", WordsC.renderWordsNEA words ]
+      WithKeyword kw block -> [ HH.text "kw", renderBlock block ]
       HRule -> [ HH.text "hr" ]
       LComment text -> [ HH.text "lcomment" ]
-      FixedWidth words -> [ HH.text "fixedw" ]
+      FixedWidth words -> [ HH.text "fixedw", WordsC.renderWordsNEA words ]
       JoinB blockA blockB -> [ renderBlock blockA, renderBlock blockB ]
     >>> HH.div []

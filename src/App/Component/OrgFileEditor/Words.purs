@@ -5,8 +5,10 @@ import Prelude
 import Type.Proxy (Proxy(..))
 
 import Data.Maybe (Maybe(..))
+import Data.Array.NonEmpty (NonEmptyArray)
+import Data.Array.NonEmpty (toArray) as NEA
 
-import Data.Text.Format.Org.Types (Words)
+import Data.Text.Format.Org.Types (Words(..))
 
 import Halogen as H
 import Halogen.HTML as HH
@@ -20,7 +22,7 @@ _words = Proxy :: _ "words"
 
 
 type Input =
-    { words :: Words
+    { words :: NonEmptyArray Words
     }
 
 
@@ -34,7 +36,7 @@ data Query a
 
 
 type State =
-    { words :: Words
+    { words :: NonEmptyArray Words
     , editing :: Boolean
     }
 
@@ -66,7 +68,9 @@ component = H.mkComponent
   render { words, editing } =
     HH.div
       [ HE.onClick \_ -> Action ]
-      [ HH.text $ "Words: " <> "(" <> (if editing then "on" else "off") <> ")" ]
+      [ HH.text $ "Words: " <> "(" <> (if editing then "on" else "off") <> ")"
+      , renderWordsNEA words
+      ]
 
   handleAction
     :: Action
@@ -98,3 +102,23 @@ component = H.mkComponent
     GetEditing reply -> do
       editing <- H.gets _.editing
       pure (Just (reply editing))
+
+
+renderWordsNEA :: forall action m. NonEmptyArray Words -> H.ComponentHTML action () m
+renderWordsNEA = HH.div [] <<< NEA.toArray <<< map renderWords
+
+
+renderWords :: forall action m. Words -> H.ComponentHTML action () m
+renderWords = case _ of
+  Marked _ str -> HH.text $ "marked" <> str
+  Link trg mbstr -> HH.text "link"
+  Image imageSrc -> HH.text "image"
+  Punct cp -> HH.text "codepoint"
+  Plain plain -> HH.text plain
+  Markup str -> HH.text str
+  DateTime { start, end } -> HH.text "datettime"
+  ClockW clock -> HH.text "clock"
+  DiaryW diary -> HH.text "diary"
+  FootnoteRef { label, def } -> HH.text $ "fn-" <> label
+  Break -> HH.text "<br>"
+  JoinW wordsA wordsB -> HH.span [] [ renderWords wordsA, renderWords wordsB ]

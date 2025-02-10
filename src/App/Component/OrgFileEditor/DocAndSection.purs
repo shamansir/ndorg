@@ -16,6 +16,7 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 
 import App.Component.OrgFileEditor.Block as BlockC
+import App.Component.OrgFileEditor.Words as WordsC
 
 
 type SecSlot = H.Slot SecQuery SecOutput
@@ -48,10 +49,12 @@ data SecAction
     = SecAction
     | SecReceive SecInput
     | HandleDoc DocOutput
+    | HandleWords Int WordsC.Output
 
 
 type SecSlots =
     ( doc :: DocSlot Int
+    , words :: WordsC.Slot Int
     )
 
 
@@ -92,9 +95,10 @@ secComponent = H.mkComponent
     SecReceive input ->
       H.modify_ _ { section = input.section }
 
+    HandleDoc _ -> pure unit
+    HandleWords _ _ -> pure unit
     -- When the button is clicked we update our `enabled` field in state, and
     -- we notify our parent component that the `Clicked` event happened.
-    HandleDoc _ -> pure unit
     SecAction -> do
       H.modify_ \state -> state { editing = not state.editing }
       H.raise SecOutput
@@ -123,7 +127,7 @@ renderSectionHeader =
     Section section ->
       HH.div []
         [ HH.text $ show section.level
-        , HH.text "heading"
+        , HH.slot WordsC._words 0 WordsC.component { words : section.heading } $ HandleWords 0
         , case section.todo of
           Just todo -> HH.text "todo"
           Nothing -> HH.text "-"
@@ -137,8 +141,8 @@ renderSectionHeader =
           Just check -> HH.text "check"
           Nothing -> HH.text "-"
         , case section.tags of
-          tags -> HH.text "tags"
           [] -> HH.text "-"
+          tags -> HH.text "tags"
         -- TODO: section.planning
         -- TODO: section.props
         -- TODO: section.drawers
