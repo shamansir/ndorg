@@ -38,8 +38,8 @@ type State =
 
 
 type Slots =
-    ( keywords :: KeywordsC.Slot Int
-    , doc :: DocC.DocSlot Int
+    ( keywords :: KeywordsC.Slot Unit
+    , doc :: DocC.DocSlot Unit
     )
 
 
@@ -66,16 +66,9 @@ component =
     HH.div_
       $ case file of
         OrgFile { meta, doc } ->
-          [ HH.slot KeywordsC._keywords 0 KeywordsC.component { keywords : meta } HandleMeta
-          , HH.slot DocC._doc 1 DocC.docComponent { doc } HandleDoc
+          [ HH.slot KeywordsC._keywords unit KeywordsC.component { keywords : meta } HandleMeta
+          , HH.slot DocC._doc unit DocC.docComponent { doc } HandleDoc
           ]
-      {-
-      [ HH.slot _section 0 section { section : sampleSec } $ HandleSection 0
-      , HH.slot _section 1 section { section : sampleSec } $ HandleSection 1
-      , HH.slot _section 2 section { section : sampleSec } $ HandleSection 2
-      , HH.text "foo"
-      ]
-       -}
 
   handleAction :: Action -> H.HalogenM State Action Slots Output m Unit
   handleAction = case _ of
@@ -84,12 +77,12 @@ component =
       -- KeywordsC.Output -> do
       _ -> do
         -- H.modify_ \state -> state { clicked = state.clicked + 1 }
-        H.tell KeywordsC._keywords 0 (KeywordsC.SetEditing true)
-        on <- H.requestAll KeywordsC._keywords KeywordsC.GetEditing
+        H.tell KeywordsC._keywords unit (KeywordsC.KwSetEditing true)
+        on <- H.requestAll KeywordsC._keywords KeywordsC.KwGetEditing
         liftEffect $ Console.log $ show on
     HandleDoc output -> case output of
       DocC.DocOutput -> do
         -- H.modify_ \state -> state { clicked = state.clicked + 1 }
-        H.tell DocC._doc 0 (DocC.DocSetEditing true)
+        H.tell DocC._doc unit (DocC.DocSetEditing true)
         on <- H.requestAll DocC._doc DocC.DocGetEditing
         liftEffect $ Console.log $ show on

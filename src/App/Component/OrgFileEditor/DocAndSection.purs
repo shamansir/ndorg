@@ -60,8 +60,8 @@ data SecAction
 
 
 type SecSlots =
-    ( doc :: DocSlot Int
-    , words :: WordsC.Slot Int
+    ( doc :: DocSlot Unit
+    , words :: WordsC.Slot Unit
     )
 
 
@@ -69,8 +69,6 @@ secComponent :: forall m. H.Component SecQuery SecInput SecOutput m
 secComponent = H.mkComponent
     { initialState
     , render
-      -- This component can handle internal actions, handle queries sent by a
-      -- parent component, and update when it receives new input.
     , eval: H.mkEval $ H.defaultEval
         { handleAction = handleAction
         , handleQuery = handleQuery
@@ -81,8 +79,6 @@ secComponent = H.mkComponent
   initialState :: SecInput -> SecState
   initialState { section } = { section, editing: false }
 
-  -- This component has no child components. When the rendered button is clicked
-  -- we will evaluate the `Click` action.
   render :: SecState -> H.ComponentHTML SecAction SecSlots m
   render { section, editing } =
     HH.div
@@ -91,15 +87,13 @@ secComponent = H.mkComponent
       ]
       [ renderSectionHeader section
       , case section of
-        Section { doc } -> HH.slot _doc 0 docComponent { doc } HandleDoc
-      -- HH.slot KeywordsC._keywords 0 KeywordsC.component { keywords : meta } HandleMeta
+        Section { doc } -> HH.slot _doc unit docComponent { doc } HandleDoc
       ]
 
   handleAction
     :: SecAction
     -> H.HalogenM SecState SecAction SecSlots SecOutput m Unit
   handleAction = case _ of
-    -- When we receive new input we update our `label` field in state.
     SecReceive input ->
       H.modify_ _ { section = input.section }
 
@@ -133,7 +127,7 @@ renderSectionHeader =
           ]
           [ HH.text $ headingMarker section.level
           , HH.text " "
-          , HH.slot WordsC._words 0 WordsC.component { words : section.heading, kind : WordsC.Inline } $ HandleWords 0
+          , HH.slot WordsC._words unit WordsC.component { words : section.heading, kind : WordsC.Inline } $ HandleWords 0
           ]
         , case section.todo of
           Just todo -> HH.text "todo"

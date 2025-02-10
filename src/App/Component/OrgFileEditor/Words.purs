@@ -41,8 +41,8 @@ data Output =
 
 
 data Query a
-  = GetEditing (Boolean -> a)
-  | SetEditing Boolean a
+  = WordsGetEditing (Boolean -> a)
+  | WordsSetEditing Boolean a
 
 
 type State =
@@ -99,10 +99,10 @@ component = H.mkComponent
      . Query a
     -> H.HalogenM State Action () Output m (Maybe a)
   handleQuery = case _ of
-    SetEditing value next -> do
+    WordsSetEditing value next -> do
       H.modify_ _ { editing = value }
       pure (Just next)
-    GetEditing reply -> do
+    WordsGetEditing reply -> do
       editing <- H.gets _.editing
       pure (Just (reply editing))
 
