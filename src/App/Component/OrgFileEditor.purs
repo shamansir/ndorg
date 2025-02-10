@@ -10,7 +10,7 @@ import Effect.Console (log) as Console
 import Data.Text.Format.Org.Types (OrgFile(..))
 import Data.Text.Format.Org.Construct (empty, sec, emptyDoc) as Org
 
-import Org.Test.Test04c as Test
+import Org.Test.Test04d as Test
 
 import Halogen as H
 import Halogen.HTML as HH

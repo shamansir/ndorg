@@ -321,6 +321,24 @@ html, body {
     /* margin-right: 4px; */
 }
 
+.ndorg-table {
+
+}
+
+.ndorg-table-row {
+
+}
+
+.ndorg-table-row.ndorg-table-row-break hr {
+    width: 100%;
+    opacity :0.6;
+}
+
+.ndorg-table-cell {
+    padding: 5px;
+    border : 1px solid rgba(100,100,100,0.5)
+}
+
 .combo {
     margin-bottom: 5px;
 }

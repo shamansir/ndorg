@@ -7,10 +7,11 @@ import Type.Proxy (Proxy(..))
 import Data.Maybe (Maybe(..))
 import Data.Array ((:))
 import Data.Array (singleton) as Array
+import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty (toArray) as NEA
 import Data.String (joinWith) as String
 
-import Data.Text.Format.Org.Types (Block(..), BlockKind(..), Language(..), Check(..), Counter(..), Drawer(..))
+import Data.Text.Format.Org.Types (Block(..), BlockKind(..), Language(..), Check(..), Counter(..), Drawer(..), TableRow(..), TableColumn(..))
 import Data.Text.Format.Org.Types (ListItems(..), ListType(..), Item(..)) as OrgList
 
 import Halogen as H
@@ -133,7 +134,11 @@ renderBlock =
       IsDrawer drawer -> [ renderDrawer drawer ]
       Footnote name words -> [ HH.text "footnote", WordsC.renderWordsNEA words ]
       List items -> [ renderList items ]
-      Table header rows -> [ HH.text "table" ]
+      Table mbHeader rows ->
+        case mbHeader of
+          Just header -> HH.text header
+          Nothing -> HH.none
+        : [ renderTable rows ]
       Paragraph words ->
         [ blockDiv "para" $ WordsC.renderWordsNEA words ]
       WithKeyword kw block -> [ HH.text "kw", renderBlock block ]
@@ -165,6 +170,35 @@ renderDrawer =
         ]
 
 
+renderTable :: forall action slots m. NonEmptyArray TableRow -> H.ComponentHTML action slots m
+renderTable rows =
+  HH.table
+    [ HP.class_ $ cn "ndorg-table" ]
+    $ NEA.toArray $ renderTableRow <$> rows
+
+
+renderTableRow :: forall action slots m. TableRow -> H.ComponentHTML action slots m
+renderTableRow = case _ of
+  BreakT ->
+    HH.tr
+      [ HP.classes [ cn "ndorg-table-row", cn "ndorg-table-row-break" ] ]
+      [ HH.td [] [ HH.hr [] ] ]
+  Row cells ->
+    HH.tr
+      [ HP.class_ $ cn "ndorg-table-row" ]
+      $ NEA.toArray $ renderTableCell <$> cells
+
+
+renderTableCell :: forall action slots m. TableColumn -> H.ComponentHTML action slots m
+renderTableCell row =
+  HH.td
+    [ HP.class_ $ cn "ndorg-table-cell" ]
+    [ case row of
+      Empty -> HH.none
+      Column words -> WordsC.renderWordsNEA words
+    ]
+
+
 renderList :: forall action slots m. OrgList.ListItems -> H.ComponentHTML action slots m
 renderList =
   case _ of
@@ -181,7 +215,7 @@ renderList =
           $ case def.check of
             Just Check     -> HH.span [ HP.class_ $ cn "ndorg-check" ]   [ HH.text "[X]" ]
             Just Uncheck   -> HH.span [ HP.class_ $ cn "ndorg-uncheck" ] [ HH.text "[ ]" ]
-            Just Halfcheck -> HH.span [ HP.class_ $ cn "ndorg-uncheck" ] [ HH.text "[-]" ]
+            Just Halfcheck -> HH.span [ HP.class_ $ cn "ndorg-halfcheck" ] [ HH.text "[-]" ]
             Nothing -> HH.none
           : case def.counter of
             Just (Counter n) -> HH.span [ HP.class_ $ cn "ndorg-counter" ] [ HH.text $ "(" <> show n <> ")" ]
