@@ -125,7 +125,7 @@ renderSectionHeader =
         [ HH.span
           [ HP.classes [ cn "ndorg-heading", cn $ "ndorg-heading-" <> show section.level ]
           ]
-          [ HH.text $ headingMarker section.level
+          [ HH.span [ HP.class_ $ cn "ndorg-heading-marker" ] [ HH.text $ headingMarker section.level ]  -- FIXME: use css:before for marker
           , HH.text " "
           , HH.slot WordsC._words unit WordsC.component { words : section.heading, kind : WordsC.Inline } $ HandleWords 0
           ]

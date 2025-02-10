@@ -67,7 +67,7 @@ component = H.mkComponent
   render { keywords, editing } =
     HH.div
       [ HE.onClick \_ -> Action
-      , HP.classes [ cn_editing editing, cn "ndorg-keywords" ]
+      , HP.classes [ cn_editing editing ]
       ]
       [ renderKeywords keywords
       ]
@@ -99,18 +99,23 @@ component = H.mkComponent
 
 renderKeywords :: forall action slots m. Keywords String -> H.ComponentHTML action slots m
 renderKeywords = case _ of
-  Keywords keywords -> HH.div [] $ renderKeyword <$> keywords
+  Keywords [] ->
+    HH.none
+  Keywords keywords ->
+    HH.div [ HP.class_ $ cn "ndorg-keywords" ]
+      $ renderKeyword <$> keywords
 
 
 renderKeyword :: forall action slots m. Keyword String -> H.ComponentHTML action slots m
 renderKeyword = case _ of
   Keyword { name, value, default } ->
-    HH.div []
-      [ HH.span [] [ HH.text name ]
-      , HH.span [] [ case value of
+    HH.div [ HP.class_ $ cn "ndorg-keyword" ]
+      [ HH.span [ HP.class_ $ cn "ndorg-keyword-prefix" ] [ HH.text "#+" ] -- FIXME: use css:before
+      , HH.span [ HP.class_ $ cn "ndorg-keyword-name" ] [ HH.text name ]
+      , HH.span [ HP.class_ $ cn "ndorg-keyword-value" ] [ case value of
         Just val -> HH.text val
         Nothing ->  HH.none ]
-      , HH.span [] [ case default of
+      , HH.span [ HP.class_ $ cn "ndorg-keyword-default" ] [ case default of
         Just def -> HH.text $ def
         Nothing -> HH.none ]
       ]

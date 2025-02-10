@@ -109,6 +109,81 @@ html, body {
     color: #ccc;
 }
 
+.ndorg-keywords {
+    border-radius: 6px;
+    border: 1px dashed #9399b2;
+    padding : 8px 10px;
+    margin: 8px 0;
+}
+
+.ndorg-keyword-prefix {
+    opacity: 0.75;
+}
+
+.ndorg-keyword-name {
+    margin-right: 6px;
+}
+
+.ndorg-keyword-name::after {
+    opacity: 0.75;
+    content: ":";
+}
+
+.ndorg-keyword-value, .ndorg-keyword-default {
+    color: #74c7ec;
+}
+
+.ndorg-time-sep {
+    opacity: 0.75;
+}
+
+.ndorg-datetime {
+    color: #c6a0f6;
+}
+
+.ndorg-datetime-inactive {
+    color: #b7bdf8;
+}
+
+.ndorg-datetime::before {
+    content: "<";
+    opacity: 0.75;
+}
+
+.ndorg-datetime::after {
+    content: ">";
+    opacity: 0.75;
+}
+
+.ndorg-datetime-inactive::before {
+    content: "[";
+    opacity: 0.75;
+}
+
+.ndorg-datetime-inactive::after {
+    content: "]";
+    opacity: 0.75;
+}
+
+.ndorg-planning {
+    padding: 5px 10px;
+    border-radius: 6px;
+    max-width : 60%;
+    background : rgba(0,0,0,0.1);
+    line-height: 1.8em;
+}
+
+.ndorg-planning-label {
+    text-transform: uppercase;
+    margin-right: 6px;
+    color: #a5adcb;
+}
+
+.ndorg-planning-label::after {
+    content: ":";
+    opacity: 0.75;
+}
+
 .combo {
     margin-bottom: 5px;
 }
