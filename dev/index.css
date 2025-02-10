@@ -3,8 +3,8 @@ html, body {
     height: 100%;
     padding: 0;
     margin: 0;
-    background-color : #333333;
-    color: #bbb;
+    background-color : #232634;
+    color: #c6d0f5;
 }
 
 .ndorg {
@@ -17,6 +17,8 @@ html, body {
     width : 70%;
     min-height: 200px;
     padding: 10px;
+    font-family: "JetBrains Mono", "Menlo", monospace;
+
 }
 
 .ndorg-preview {
@@ -25,6 +27,7 @@ html, body {
     min-height: 200px;
     padding: 10px;
     color: #666;
+    font-family: "JetBrains Mono", "Menlo", monospace;
 }
 
 .ndorg-suggest {
@@ -36,8 +39,70 @@ html, body {
     border: 2px solid black;
     padding: 10px;
     border-radius: 10px;
-    background-color: #777;
+    background-color: #414559;
     color: #eee;
+}
+
+.ndorg-editing {
+
+}
+
+.ndorg-not-editing {
+
+}
+
+.ndorg-words-inline {
+    display: inline;
+}
+
+.ndorg-heading {
+    display : inline-block;
+}
+
+.ndorg-heading-1 {
+    color: #ef9f76;
+    font-size: 16px;
+    margin : 10px 0;
+}
+
+.ndorg-heading-2 {
+    color: #e5c890;
+    font-size: 15px;
+    margin : 10px 0;
+}
+
+.ndorg-heading-3 {
+    color: #a6d189;
+    font-size: 15px;
+    margin : 9px 0;
+}
+
+.ndorg-heading-4 {
+    color: #81c8be;
+    font-size: 14px;
+    margin : 8px 0;
+}
+
+.ndorg-heading-5 {
+    color: #99d1db;
+    font-size: 14px;
+    margin : 8px 0;
+}
+
+.ndorg-heading-6 {
+    color: #85c1dc;
+    font-size: 12px;
+    margin : 6px 0;
+}
+
+.ndorg-heading-7 {
+    color: #85c1dc;
+    font-size: 12px;
+    margin : 6px 0;
+}
+
+.ndorg-block-para {
+    line-height: 1.6em;
 }
 
 .ndorg-hint {

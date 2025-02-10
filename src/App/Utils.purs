@@ -15,11 +15,22 @@ import Web.HTML.Common (ClassName)
 import Web.UIEvent.KeyboardEvent as KE
 import Web.UIEvent.KeyboardEvent.EventTypes as KET
 
+import Halogen.HTML.Core (HTML)
+import Halogen.HTML as HH
+
 import App.Keys (Key(..), Modifier(..), KeyEvent)
 
 
 cn :: String -> ClassName
 cn = NT.wrap
+
+
+cn_editing :: Boolean -> ClassName
+cn_editing v = if v then cn "ndorg-editing" else cn "ndorg-not-editing"
+
+
+none :: forall w i. HTML w i
+none = HH.text ""
 
 
 extract :: KE.KeyboardEvent -> Maybe KeyEvent

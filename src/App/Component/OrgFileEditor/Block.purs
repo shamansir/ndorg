@@ -12,7 +12,9 @@ import Data.Text.Format.Org.Types (Block(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
+import Halogen.HTML.Properties as HP
 
+import App.Utils (cn, cn_editing)
 import App.Component.OrgFileEditor.Words as WordsC
 
 
@@ -64,9 +66,10 @@ component = H.mkComponent
   render :: State -> H.ComponentHTML Action () m
   render { block, editing } =
     HH.div
-      [ HE.onClick \_ -> Action ]
-      [ HH.text $ "Block : (" <> (if editing then "on" else "off") <> ")"
-      , renderBlock block
+      [ HE.onClick \_ -> Action
+      , HP.classes [ cn_editing editing, cn "ndorg-block" ]
+      ]
+      [ renderBlock block
       ]
 
   handleAction
@@ -103,10 +106,14 @@ renderBlock =
       Footnote name words -> [ HH.text "footnote", WordsC.renderWordsNEA words ]
       List items -> [ HH.text "list" ]
       Table header rows -> [ HH.text "table" ]
-      Paragraph words -> [ HH.text "para", WordsC.renderWordsNEA words ]
+      Paragraph words ->
+        [ HH.div
+          [ HP.class_ $ cn "ndorg-block-para" ]
+          [ WordsC.renderWordsNEA words ]
+        ]
       WithKeyword kw block -> [ HH.text "kw", renderBlock block ]
       HRule -> [ HH.text "hr" ]
       LComment text -> [ HH.text "lcomment" ]
       FixedWidth words -> [ HH.text "fixedw", WordsC.renderWordsNEA words ]
       JoinB blockA blockB -> [ renderBlock blockA, renderBlock blockB ]
-    >>> HH.div []
+    >>> HH.div [ HP.class_ $ cn "ndorg-block" ]

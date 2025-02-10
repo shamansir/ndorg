@@ -5,7 +5,8 @@ import Prelude
 import Type.Proxy (Proxy(..))
 
 import Data.Maybe (Maybe(..))
-import Data.Array ((:))
+import Data.Array ((:), replicate)
+import Data.String (joinWith) as String
 
 import Data.FunctorWithIndex (mapWithIndex)
 
@@ -14,6 +15,10 @@ import Data.Text.Format.Org.Types (Section(..), OrgDoc(..), Drawer(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
+import Halogen.HTML.Properties as HP
+
+import App.Utils (cn, cn_editing)
+import App.Utils (none) as HH
 
 import App.Component.OrgFileEditor.Block as BlockC
 import App.Component.OrgFileEditor.Words as WordsC
@@ -81,9 +86,10 @@ secComponent = H.mkComponent
   render :: SecState -> H.ComponentHTML SecAction SecSlots m
   render { section, editing } =
     HH.div
-      [ HE.onClick \_ -> SecAction ]
-      [ HH.text $ "Section: " <> " (" <> (if editing then "on" else "off") <> ")"
-      , renderSectionHeader section
+      [ HE.onClick \_ -> SecAction
+      , HP.classes [ cn_editing editing, cn "ndorg-section" ]
+      ]
+      [ renderSectionHeader section
       , case section of
         Section { doc } -> HH.slot _doc 0 docComponent { doc } HandleDoc
       -- HH.slot KeywordsC._keywords 0 KeywordsC.component { keywords : meta } HandleMeta
@@ -99,8 +105,6 @@ secComponent = H.mkComponent
 
     HandleDoc _ -> pure unit
     HandleWords _ _ -> pure unit
-    -- When the button is clicked we update our `enabled` field in state, and
-    -- we notify our parent component that the `Clicked` event happened.
     SecAction -> do
       H.modify_ \state -> state { editing = not state.editing }
       H.raise SecOutput
@@ -110,14 +114,10 @@ secComponent = H.mkComponent
      . SecQuery a
     -> H.HalogenM SecState SecAction SecSlots SecOutput m (Maybe a)
   handleQuery = case _ of
-    -- When we receive a the tell-style `SetEnabled` query with a boolean, we
-    -- set that value in state.
     SecSetEditing value next -> do
       H.modify_ _ { editing = value }
       pure (Just next)
 
-    -- When we receive a the request-style `GetEnabled` query, which requires
-    -- a boolean result, we get a boolean from our state and reply with it.
     SecGetEditing reply -> do
       editing <- H.gets _.editing
       pure (Just (reply editing))
@@ -127,33 +127,39 @@ renderSectionHeader :: forall m. Section -> H.ComponentHTML SecAction SecSlots m
 renderSectionHeader =
   case _ of
     Section section ->
-      HH.div []
-        [ HH.text $ show section.level
-        , HH.slot WordsC._words 0 WordsC.component { words : section.heading } $ HandleWords 0
+      HH.div [ HP.class_ $ cn "ndorg-section" ]
+        [ HH.span
+          [ HP.classes [ cn "ndorg-heading", cn $ "ndorg-heading-" <> show section.level ]
+          ]
+          [ HH.text $ headingMarker section.level
+          , HH.text " "
+          , HH.slot WordsC._words 0 WordsC.component { words : section.heading, kind : WordsC.Inline } $ HandleWords 0
+          ]
         , case section.todo of
           Just todo -> HH.text "todo"
-          Nothing -> HH.text "-"
+          Nothing -> HH.none
         , case section.priority of
           Just priority -> HH.text "priority"
-          Nothing -> HH.text "-"
+          Nothing ->  HH.none
         , case section.cookie of
           Just cookie -> HH.text "cookie"
-          Nothing -> HH.text "-"
+          Nothing ->  HH.none
         , case section.check of
           Just check -> HH.text "check"
-          Nothing -> HH.text "-"
+          Nothing ->  HH.none
         , case section.tags of
-          [] -> HH.text "-"
+          [] ->  HH.none
           tags -> HH.span [] $ HH.text <$> tags
         , case section.drawers of
-          [] -> HH.text "-"
+          [] ->  HH.none
           drawers -> HH.div [] $ renderDrawer <$> drawers
         , if PlanningC.hasPlanning section.planning
           then PlanningC.renderPlanning section.planning
-          else HH.text "-"
+          else  HH.none
         , KeywordsC.renderKeywords section.props
-        , if section.comment then HH.text "comment" else HH.text "-"
+        , if section.comment then HH.text "comment" else  HH.none
         ]
+  where headingMarker level = String.joinWith "" $ replicate level "*"
 
 
 renderDrawer :: forall action slots m. Drawer -> H.ComponentHTML action slots m
@@ -214,14 +220,13 @@ docComponent = H.mkComponent
   initialState :: DocInput -> DocState
   initialState { doc } = { doc, editing: false }
 
-  -- This component has no child components. When the rendered button is clicked
-  -- we will evaluate the `Click` action.
   render :: DocState -> H.ComponentHTML DocAction DocSlots m
   render { doc, editing } =
     HH.div
-      [ HE.onClick \_ -> DocAction ]
-      $ (HH.text $ "Doc: " <> " (" <> (if editing then "on" else "off") <> ")")
-      : case doc of
+      [ HE.onClick \_ -> DocAction
+      , HP.classes [ cn_editing editing, cn "ndorg-doc" ]
+      ]
+      $ case doc of
         OrgDoc { zeroth, sections } ->
           [ HH.div [] $ mapWithIndex (\idx block -> HH.slot BlockC._block idx BlockC.component { block } $ HandleBlock idx) zeroth
           , HH.div [] $ mapWithIndex (\idx section -> HH.slot _section idx secComponent { section } $ HandleSection idx) sections

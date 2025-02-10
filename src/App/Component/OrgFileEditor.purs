@@ -34,7 +34,6 @@ type Output = Unit
 
 type State =
     { file :: OrgFile
-    , clicked :: Int
     }
 
 
@@ -60,7 +59,7 @@ component =
   where
 
   initialState :: input -> State
-  initialState _ = { file: Test.test, clicked : 0 }
+  initialState _ = { file: Test.test }
 
   render :: State -> H.ComponentHTML Action Slots m
   render { file } = do
@@ -82,14 +81,15 @@ component =
   handleAction = case _ of
     Action -> pure unit
     HandleMeta output -> case output of
-      KeywordsC.Output -> do
-        H.modify_ \state -> state { clicked = state.clicked + 1 }
+      -- KeywordsC.Output -> do
+      _ -> do
+        -- H.modify_ \state -> state { clicked = state.clicked + 1 }
         H.tell KeywordsC._keywords 0 (KeywordsC.SetEditing true)
         on <- H.requestAll KeywordsC._keywords KeywordsC.GetEditing
         liftEffect $ Console.log $ show on
     HandleDoc output -> case output of
       DocC.DocOutput -> do
-        H.modify_ \state -> state { clicked = state.clicked + 1 }
+        -- H.modify_ \state -> state { clicked = state.clicked + 1 }
         H.tell DocC._doc 0 (DocC.DocSetEditing true)
         on <- H.requestAll DocC._doc DocC.DocGetEditing
         liftEffect $ Console.log $ show on

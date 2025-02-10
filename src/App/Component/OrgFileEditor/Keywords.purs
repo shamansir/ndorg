@@ -12,6 +12,10 @@ import Data.Text.Format.Org.Keywords (Keywords(..), Keyword(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
+import Halogen.HTML.Properties as HP
+
+import App.Utils (cn, cn_editing)
+import App.Utils (none) as HH
 
 
 type Slot = H.Slot Query Output
@@ -62,9 +66,10 @@ component = H.mkComponent
   render :: State -> H.ComponentHTML Action () m
   render { keywords, editing } =
     HH.div
-      [ HE.onClick \_ -> Action ]
-      [ HH.text $ "Keywords: " <> " (" <> (if editing then "on" else "off") <> ")"
-      , renderKeywords keywords
+      [ HE.onClick \_ -> Action
+      , HP.classes [ cn_editing editing, cn "ndorg-keywords" ]
+      ]
+      [ renderKeywords keywords
       ]
 
   handleAction
@@ -102,10 +107,10 @@ renderKeyword = case _ of
   Keyword { name, value, default } ->
     HH.div []
       [ HH.span [] [ HH.text name ]
-      , HH.span [] [ HH.text $ case value of
-        Just val -> val
-        Nothing -> "-" ]
-      , HH.span [] [ HH.text $ case default of
-        Just def -> def
-        Nothing -> "-" ]
+      , HH.span [] [ case value of
+        Just val -> HH.text val
+        Nothing ->  HH.none ]
+      , HH.span [] [ case default of
+        Just def -> HH.text $ def
+        Nothing -> HH.none ]
       ]

@@ -14,6 +14,9 @@ import Data.Text.Format.Org.Types (Planning(..), OrgDateTime(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
+import Halogen.HTML.Properties as HP
+
+import App.Utils (cn, cn_editing)
 
 
 type Slot = H.Slot Query Output
@@ -64,9 +67,10 @@ component = H.mkComponent
   render :: State -> H.ComponentHTML Action () m
   render { planning, editing } =
     HH.div
-      [ HE.onClick \_ -> Action ]
-      [ HH.text $ "Keywords: " <> " (" <> (if editing then "on" else "off") <> ")"
-      , renderPlanning planning
+      [ HE.onClick \_ -> Action
+      , HP.classes [ cn_editing editing, cn "ndorg-planning" ]
+      ]
+      [ renderPlanning planning
       ]
 
   handleAction

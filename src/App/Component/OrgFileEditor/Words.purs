@@ -5,6 +5,7 @@ import Prelude
 import Type.Proxy (Proxy(..))
 
 import Data.Maybe (Maybe(..))
+import Data.Array ((:))
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty (toArray) as NEA
 
@@ -13,6 +14,9 @@ import Data.Text.Format.Org.Types (Words(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
+import Halogen.HTML.Properties as HP
+
+import App.Utils (cn, cn_editing)
 
 
 type Slot = H.Slot Query Output
@@ -21,8 +25,14 @@ type Slot = H.Slot Query Output
 _words = Proxy :: _ "words"
 
 
+data Kind
+  = Inline
+  | AsBlock
+
+
 type Input =
     { words :: NonEmptyArray Words
+    , kind :: Kind
     }
 
 
@@ -37,6 +47,7 @@ data Query a
 
 type State =
     { words :: NonEmptyArray Words
+    , kind :: Kind
     , editing :: Boolean
     }
 
@@ -58,15 +69,20 @@ component = H.mkComponent
     }
   where
   initialState :: Input -> State
-  initialState { words } = { words, editing: false }
+  initialState { words, kind } = { words, kind, editing: false }
 
   render :: State -> H.ComponentHTML Action () m
-  render { words, editing } =
+  render { kind, words, editing } =
     HH.div
-      [ HE.onClick \_ -> Action ]
-      [ HH.text $ "Words: " <> "(" <> (if editing then "on" else "off") <> ")"
-      , renderWordsNEA words
+      [ HE.onClick \_ -> Action
+      , HP.classes
+          $ case kind of
+            Inline -> [ cn_editing editing, cn "ndorg-words", cn "ndorg-words-inline" ]
+            AsBlock -> [ cn_editing editing, cn "ndorg-words" ]
       ]
+      [ renderWordsNEA words
+      ]
+
 
   handleAction
     :: Action
@@ -92,7 +108,7 @@ component = H.mkComponent
 
 
 renderWordsNEA :: forall action slots m. NonEmptyArray Words -> H.ComponentHTML action slots m
-renderWordsNEA = HH.div [] <<< NEA.toArray <<< map renderWords
+renderWordsNEA = HH.span [] <<< NEA.toArray <<< map renderWords
 
 
 renderWords :: forall action slots m. Words -> H.ComponentHTML action slots m
@@ -107,5 +123,5 @@ renderWords = case _ of
   ClockW clock -> HH.text "clock"
   DiaryW diary -> HH.text "diary"
   FootnoteRef { label, def } -> HH.text $ "fn-" <> label
-  Break -> HH.text "<br>"
+  Break -> HH.br_
   JoinW wordsA wordsB -> HH.span [] [ renderWords wordsA, renderWords wordsB ]
