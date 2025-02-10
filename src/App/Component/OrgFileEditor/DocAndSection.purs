@@ -9,7 +9,7 @@ import Data.Array ((:))
 
 import Data.FunctorWithIndex (mapWithIndex)
 
-import Data.Text.Format.Org.Types (Section(..), OrgDoc(..))
+import Data.Text.Format.Org.Types (Section(..), OrgDoc(..), Drawer(..))
 
 import Halogen as H
 import Halogen.HTML as HH
@@ -17,6 +17,8 @@ import Halogen.HTML.Events as HE
 
 import App.Component.OrgFileEditor.Block as BlockC
 import App.Component.OrgFileEditor.Words as WordsC
+import App.Component.OrgFileEditor.Keywords as KeywordsC
+import App.Component.OrgFileEditor.Planning as PlanningC
 
 
 type SecSlot = H.Slot SecQuery SecOutput
@@ -142,13 +144,21 @@ renderSectionHeader =
           Nothing -> HH.text "-"
         , case section.tags of
           [] -> HH.text "-"
-          tags -> HH.text "tags"
-        -- TODO: section.planning
-        -- TODO: section.props
-        -- TODO: section.drawers
+          tags -> HH.span [] $ HH.text <$> tags
+        , case section.drawers of
+          [] -> HH.text "-"
+          drawers -> HH.div [] $ renderDrawer <$> drawers
+        , if PlanningC.hasPlanning section.planning
+          then PlanningC.renderPlanning section.planning
+          else HH.text "-"
+        , KeywordsC.renderKeywords section.props
         , if section.comment then HH.text "comment" else HH.text "-"
         ]
 
+
+renderDrawer :: forall action slots m. Drawer -> H.ComponentHTML action slots m
+renderDrawer = case _ of
+  Drawer { name, content } -> HH.span [] [ HH.text name, WordsC.renderWordsNEA content ]
 
 
 _doc = Proxy :: _ "doc"
@@ -194,8 +204,6 @@ docComponent :: forall m. H.Component DocQuery DocInput DocOutput m
 docComponent = H.mkComponent
     { initialState
     , render
-      -- This component can handle internal actions, handle queries sent by a
-      -- parent component, and update when it receives new input.
     , eval: H.mkEval $ H.defaultEval
         { handleAction = handleAction
         , handleQuery = handleQuery
@@ -218,21 +226,15 @@ docComponent = H.mkComponent
           [ HH.div [] $ mapWithIndex (\idx block -> HH.slot BlockC._block idx BlockC.component { block } $ HandleBlock idx) zeroth
           , HH.div [] $ mapWithIndex (\idx section -> HH.slot _section idx secComponent { section } $ HandleSection idx) sections
           ]
-            -- [ HH.div [] $ mapWithIndex (\idx block -> HH.slot BlockC._block idx BlockC.component { block } $ HandleBlock idx) zeroth
-            -- , HH.div [] $ mapWithIndex (\idx section -> HH.slot _section idx secComponent { section } $ HandleSection idx) sections
-            -- ]
-          -- HH.slot KeywordsC._keywords 0 KeywordsC.component { keywords : meta } HandleMeta
+
 
   handleAction
     :: DocAction
     -> H.HalogenM DocState DocAction DocSlots DocOutput m Unit
   handleAction = case _ of
-    -- When we receive new input we update our `label` field in state.
     DocReceive input ->
       H.modify_ _ { doc = input.doc }
 
-    -- When the button is clicked we update our `enabled` field in state, and
-    -- we notify our parent component that the `Clicked` event happened.
     DocAction -> do
       H.modify_ \state -> state { editing = not state.editing }
       H.raise DocOutput
@@ -248,14 +250,9 @@ docComponent = H.mkComponent
      . DocQuery a
     -> H.HalogenM DocState DocAction DocSlots DocOutput m (Maybe a)
   handleQuery = case _ of
-    -- When we receive a the tell-style `SetEnabled` query with a boolean, we
-    -- set that value in state.
     DocSetEditing value next -> do
       H.modify_ _ { editing = value }
       pure (Just next)
-
-    -- When we receive a the request-style `GetEnabled` query, which requires
-    -- a boolean result, we get a boolean from our state and reply with it.
     DocGetEditing reply -> do
       editing <- H.gets _.editing
       pure (Just (reply editing))

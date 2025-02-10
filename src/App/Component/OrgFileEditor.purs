@@ -58,9 +58,6 @@ component =
     , eval: H.mkEval $ H.defaultEval { handleAction = handleAction }
     }
   where
-  -- _section = SectionC._section
-  -- section = SectionC.component
-  -- sampleSec = Org.sec 0 [] Org.emptyDoc
 
   initialState :: input -> State
   initialState _ = { file: Test.test, clicked : 0 }
