@@ -103,5 +103,7 @@ let upstream =
         sha256:661c257c997f37bba1b169020a87ae6ea08eb998e931875cb92e86ac9ea26846
 with text-formatting =
     ../purescript-text-formatting/spago.dhall as Location
+with org =
+    ../purescript-org/spago.dhall as Location
 
 in  upstream
