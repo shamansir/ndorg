@@ -22,7 +22,9 @@ import Halogen.HTML.Core (AttrName(..))
 
 import App.Utils (cn, cn_editing)
 import App.Utils (none) as HH
+
 import App.Component.OrgFileEditor.Words as WordsC
+import App.Component.OrgFileEditor.Keywords as KeywordsC
 
 
 type Slot = H.Slot Query Output
@@ -150,9 +152,15 @@ renderBlock =
         : [ renderTable rows ]
       Paragraph words ->
         [ blockDiv "para" $ WordsC.renderWordsNEA words ]
-      WithKeyword kw block -> [ HH.text "kw", renderBlock block ]
+      WithKeyword kw block ->
+        [ KeywordsC.renderKeyword kw, renderBlock block ]
       HRule -> [ HH.hr [] ]
-      LComment text -> [ HH.text "lcomment" ]
+      LComment text ->
+        [ HH.div
+          [ HP.class_ $ cn "ndorg-lcomment"
+          ]
+          $ HH.text <$> text
+        ]
       FixedWidth words -> [ HH.div [ HP.class_ $ cn "ndorg-block-fixed-width" ] [ WordsC.renderWordsNEA words ] ]
       JoinB blockA blockB -> [ renderBlock blockA, renderBlock blockB ]
     >>> HH.div [ HP.class_ $ cn "ndorg-block" ]
