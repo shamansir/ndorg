@@ -136,7 +136,14 @@ renderWords = case _ of
   DateTime { start, end } -> HH.text "datettime"
   ClockW clock -> HH.text "clock"
   DiaryW diary -> HH.text "diary"
-  FootnoteRef { label, def } -> HH.text $ "fn-" <> label
+  FootnoteRef { label, def } ->
+    qmkspan "fn-ref"
+      $ HH.a
+        [ HP.href $ "#" <> label ]
+        [ HH.text $ case def of
+          Just text -> text
+          Nothing -> "[" <> label <> "]"
+        ]
   Break -> HH.br_
   JoinW wordsA wordsB -> HH.span [] [ renderWords wordsA, renderWords wordsB ]
   where

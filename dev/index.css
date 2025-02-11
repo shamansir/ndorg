@@ -339,6 +339,34 @@ html, body {
     border : 1px solid rgba(100,100,100,0.5)
 }
 
+.ndorg-footnote-block {
+    padding : 5px 7px;
+    border-radius: 3px;
+    background-color:  #1e1e2e;
+    color: #a6adc8;
+}
+
+.ndorg-footnote-name {
+    margin-right: 5px;
+    color: #b4befe;
+}
+
+.ndorg-footnote-name::after {
+    content: ":";
+}
+
+.ndorg-markup-fn-ref a {
+    color: #74c7ec;
+}
+
+.ndorg-markup-fn-ref a:visited {
+    color: #89b4fa;
+}
+
+.ndorg-markup-fn-ref a:hover {
+    color: #94e2d5;
+}
+
 .combo {
     margin-bottom: 5px;
 }

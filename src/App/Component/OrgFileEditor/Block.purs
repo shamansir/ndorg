@@ -18,6 +18,7 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Halogen.HTML.Core (AttrName(..))
 
 import App.Utils (cn, cn_editing)
 import App.Utils (none) as HH
@@ -132,7 +133,15 @@ renderBlock =
           endMark = text
         in [ blockDiv_ "custom" $ blockStartEnd_ startMark endMark $ WordsC.renderWordsNEA words ]
       IsDrawer drawer -> [ renderDrawer drawer ]
-      Footnote name words -> [ HH.text "footnote", WordsC.renderWordsNEA words ]
+      Footnote name words ->
+        [ HH.div
+          [ HP.class_ $ cn "ndorg-footnote-block"
+          ]
+          [ HH.span [ HP.class_ $ cn "ndorg-footnote-name" ]
+            [ HH.a [ HP.attr (AttrName "name") name ] [ HH.text name ] ]
+          , HH.span [ HP.class_ $ cn "ndorg-footnote-content" ] [ WordsC.renderWordsNEA words ]
+          ]
+        ]
       List items -> [ renderList items ]
       Table mbHeader rows ->
         case mbHeader of
