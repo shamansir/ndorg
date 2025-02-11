@@ -34,7 +34,7 @@ import App.State (State, Context(..))
 import App.State (init, suggestions) as AppState
 import App.Utils (cn, extract)
 
-import App.Action (Action(..))
+import App.Action (Action(..), ExampleId(..))
 import App.Component.Combo as ComboC
 import App.Keys (Combo)
 import App.Keys (Match, matches) as Keys
@@ -43,6 +43,25 @@ import App.Keys (Match(..)) as Match
 
 import App.Component.OrgFileEditor as EditorC
 import App.Component.OrgFilePreview as PreviewC
+
+import Org.Test.Test01 as Ex01
+import Org.Test.Test02a as Ex02a
+import Org.Test.Test02b as Ex02b
+import Org.Test.Test03a as Ex03a
+import Org.Test.Test03b as Ex03b
+import Org.Test.Test03c as Ex03c
+import Org.Test.Test03d as Ex03d
+import Org.Test.Test03e as Ex03e
+import Org.Test.Test04a as Ex04a
+import Org.Test.Test04b as Ex04b
+import Org.Test.Test04c as Ex04c
+import Org.Test.Test04d as Ex04d
+import Org.Test.Test04e as Ex04e
+import Org.Test.Test04f as Ex04f
+import Org.Test.Test04g as Ex04g
+import Org.Test.Test04h as Ex04h
+import Org.Test.Test04i as Ex04i
+import Org.Test.Test18 as Ex18
 
 
 type Slots =
@@ -84,7 +103,7 @@ render state =
         [ HP.class_ $ cn "ndorg-editor" ]
         [ HH.span [ HP.class_ $ cn "ndorg-hint" ]
         [ HH.text "Press a key..." ]
-        , HH.slot_ EditorC._editor unit EditorC.component unit
+        , HH.slot_ EditorC._editor unit EditorC.component { file : Debug.spy "file-ed" state.file }
         ]
     , HH.div
         [ HP.class_ $ cn "ndorg-preview" ]
@@ -132,6 +151,8 @@ handleAction = case _ of
     pure unit
   WaitForCombos combo nextCombos ->
     State.modify_ $ _ { context = InCombo combo nextCombos }
+  LoadExample n ->
+    State.modify_ $ _ { file = example n, context = TopLevel }
     {-
     | KE.shiftKey ev -> do
         H.liftEffect $ E.preventDefault $ KE.toEvent ev
@@ -149,9 +170,31 @@ handleAction = case _ of
     -}
 
 
+example = case _ of
+  Ex01 -> Ex01.test
+  Ex02a -> Ex02a.test
+  Ex02b -> Ex02b.test
+  Ex03a -> Ex03a.test
+  Ex03b -> Ex03b.test
+  Ex03c -> Ex03c.test
+  Ex03d -> Ex03d.test
+  Ex03e -> Ex03e.test
+  Ex04a -> Ex04a.test
+  Ex04b -> Ex04b.test
+  Ex04c -> Ex04c.test
+  Ex04d -> Ex04d.test
+  Ex04e -> Ex04e.test
+  Ex04f -> Ex04f.test
+  Ex04g -> Ex04g.test
+  Ex04h -> Ex04h.test
+  Ex04i -> Ex04i.test
+  Ex18 -> Ex18.test
+  _ -> Ex01.test
+
+
 nextActionByKeypress :: Array (Combo Action) -> KE.KeyboardEvent -> Array Action
 nextActionByKeypress curCombos wkevt =
-  case extract wkevt of
+  case Debug.spy "kevt" $ extract wkevt of
     Just kevt ->
       case Debug.spy "matches" $ Keys.matches curCombos kevt of
         Match.Exact combo -> [ Combo.get combo ]

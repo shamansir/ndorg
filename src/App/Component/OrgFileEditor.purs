@@ -4,13 +4,15 @@ import Prelude
 
 import Type.Proxy (Proxy(..))
 
+import Data.Maybe (Maybe(..))
+
+import Control.Monad.State as State
+
 import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Console (log) as Console
 
 import Data.Text.Format.Org.Types (OrgFile(..))
 import Data.Text.Format.Org.Construct (empty, sec, emptyDoc) as Org
-
-import Org.Test.Test04g as Test
 
 import Halogen as H
 import Halogen.HTML as HH
@@ -27,6 +29,11 @@ type Slot = H.Slot Query Output
 
 
 data Query a = Query a
+
+
+type Input =
+    { file :: OrgFile
+    }
 
 
 type Output = Unit
@@ -47,19 +54,23 @@ data Action
     = Action
     | HandleMeta KeywordsC.Output
     | HandleDoc DocC.DocOutput
+    | Receive Input
 
 
-component :: forall input m. MonadEffect m => H.Component Query input Output m
+component :: forall m. MonadEffect m => H.Component Query Input Output m
 component =
   H.mkComponent
     { initialState
     , render
-    , eval: H.mkEval $ H.defaultEval { handleAction = handleAction }
+    , eval : H.mkEval $ H.defaultEval
+      { handleAction = handleAction
+      , receive = Just <<< Receive
+      }
     }
   where
 
-  initialState :: input -> State
-  initialState _ = { file: Test.test }
+  initialState :: Input -> State
+  initialState { file } = { file }
 
   render :: State -> H.ComponentHTML Action Slots m
   render { file } = do
@@ -86,3 +97,5 @@ component =
         H.tell DocC._doc unit (DocC.DocSetEditing true)
         on <- H.requestAll DocC._doc DocC.DocGetEditing
         liftEffect $ Console.log $ show on
+    Receive { file } ->
+      State.modify_ $ _ { file = file }

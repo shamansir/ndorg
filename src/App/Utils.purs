@@ -1,5 +1,7 @@
 module App.Utils where
 
+import Debug as Debug
+
 import Prelude
 
 import Data.Maybe (Maybe(..), isJust)
