@@ -179,6 +179,16 @@ html, body {
     opacity: 0.75;
 }
 
+.ndorg-clock::before {
+    content: "{";
+    opacity: 0.4;
+}
+
+.ndorg-clock::after {
+    content: "}";
+    opacity: 0.4;
+}
+
 .ndorg-planning {
     padding: 5px 10px;
     border-radius: 6px;
@@ -394,6 +404,13 @@ html, body {
 
 }
 
+.ndorg-markup-word {
+    color: red;
+}
+
+.ndorg-diary-expr {
+    color: #85c1dc;
+}
 
 .combo {
     margin-bottom: 5px;

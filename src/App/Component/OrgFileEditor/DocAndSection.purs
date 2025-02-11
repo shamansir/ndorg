@@ -162,7 +162,7 @@ renderSectionHeader =
           tags -> HH.span [ HP.class_ $ cn "ndorg-tags" ] $ renderTag <$> tags
         , case section.drawers of
           [] ->  HH.none
-          drawers -> HH.div [ HP.class_ $ cn "ndorg-drawer" ] $ renderDrawer <$> drawers
+          drawers -> HH.div [ HP.class_ $ cn "ndorg-block-drawers" ] $ BlockC.renderDrawer <$> drawers
         , if PlanningC.hasPlanning section.planning
           then PlanningC.renderPlanning section.planning
           else  HH.none
@@ -171,11 +171,6 @@ renderSectionHeader =
   where
     renderTag tag = HH.span [ HP.class_ $ cn "ndorg-tag" ] [ HH.text tag ]
     headingMarker level = String.joinWith "" $ replicate level "*"
-
-
-renderDrawer :: forall action slots m. Drawer -> H.ComponentHTML action slots m
-renderDrawer = case _ of
-  Drawer { name, content } -> HH.span [] [ HH.text name, WordsC.renderWordsNEA content ]
 
 
 _doc = Proxy :: _ "doc"

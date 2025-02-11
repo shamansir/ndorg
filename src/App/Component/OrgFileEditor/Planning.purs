@@ -12,8 +12,9 @@ import Data.Time (hour, minute) as Time
 -- import Data.Date.Component
 import Data.Enum (fromEnum)
 import Data.String (take) as String
+import Data.Array ((:))
 
-import Data.Text.Format.Org.Types (Planning(..), OrgDateTime(..), OrgTimeRange(..), Repeater(..), RepeaterMode(..), Interval(..), Delay(..), DelayMode(..))
+import Data.Text.Format.Org.Types (Planning(..), OrgDateTime(..), OrgTimeRange(..), Repeater(..), RepeaterMode(..), Interval(..), Delay(..), DelayMode(..), Clock(..), Diary(..))
 -- import Data.Text.Format.Org.Types (Keywords)
 
 import Halogen as H
@@ -140,20 +141,8 @@ renderDateTime = case _ of
       ]
 
       <> case def.time of
-        Just (OrgTimeRange range) ->
-          [ HH.text " "
-          , HH.text $ leadingZero $ fromEnum $ Time.hour range.start
-          , qsep ":"
-          , HH.text $ leadingZero $ fromEnum $ Time.minute range.start
-          ]
-          <> case range.end of
-            Just endTime ->
-              [ qsep "--"
-              , HH.text $ leadingZero $ fromEnum $ Time.hour endTime
-              , qsep ":"
-              , HH.text $ leadingZero $ fromEnum $ Time.minute endTime
-              ]
-            Nothing -> []
+        Just timeRange ->
+          renderTimeRange timeRange
         Nothing -> []
 
        <> case def.repeat of
@@ -188,9 +177,66 @@ renderDateTime = case _ of
       Week -> "w"
       Month -> "m"
       Year -> "y"
-    qsep sep = HH.span [ HP.class_ $ cn "ndorg-time-sep" ] [ HH.text sep ]
-    leadingZero n | n < 10 = "0" <> show n
-    leadingZero n | otherwise = show n
+
+
+renderTimeRange :: forall action slots m. OrgTimeRange -> Array (H.ComponentHTML action slots m)
+renderTimeRange = case _ of
+  OrgTimeRange range ->
+    [ HH.text " "
+    , HH.text $ leadingZero $ fromEnum $ Time.hour range.start
+    , qsep ":"
+    , HH.text $ leadingZero $ fromEnum $ Time.minute range.start
+    ]
+    <> case range.end of
+      Just endTime ->
+        [ qsep "--"
+        , HH.text $ leadingZero $ fromEnum $ Time.hour endTime
+        , qsep ":"
+        , HH.text $ leadingZero $ fromEnum $ Time.minute endTime
+        ]
+      Nothing -> []
+
+
+renderClock :: forall action slots m. Clock -> H.ComponentHTML action slots m
+renderClock = case _ of
+  Clock { hour, minute, second } ->
+    HH.span [ HP.class_ $ cn "ndorg-clock" ]
+      $
+      [ HH.text $ leadingZero hour
+      , qsep ":"
+      , HH.text $ leadingZero minute
+      ] <>
+      ( case second of
+        Just secondv ->
+          [ qsep ":"
+          , HH.text $ leadingZero secondv
+          ]
+        Nothing -> []
+      )
+
+
+renderDiary :: forall action slots m. Diary -> H.ComponentHTML action slots m
+renderDiary = case _ of
+  Diary { expr, time } ->
+    HH.span [ HP.class_ $ cn "ndorg-diary" ]
+      $
+      [ HH.span [ HP.class_ $ cn "ndorg-diary-expr" ] [ HH.text expr ]
+      ] <>
+      ( case time of
+        Just timeRange ->
+          HH.text " "
+          : renderTimeRange timeRange
+        Nothing -> []
+      )
+
+
+
+qsep sep = HH.span [ HP.class_ $ cn "ndorg-time-sep" ] [ HH.text sep ]
+
+
+leadingZero :: Int -> String
+leadingZero n | n < 10 = "0" <> show n
+leadingZero n | otherwise = show n
 
 
 hasPlanning :: Planning -> Boolean -- FIXME: move to the `org` package

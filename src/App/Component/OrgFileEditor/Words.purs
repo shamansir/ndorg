@@ -7,6 +7,7 @@ import Type.Proxy (Proxy(..))
 import Data.Maybe (Maybe(..))
 import Data.Array ((:))
 import Data.Array (singleton) as Array
+import Data.String (fromCodePointArray, codePointFromChar) as String
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty (toArray) as NEA
 
@@ -22,6 +23,7 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 
 import App.Utils (cn, cn_editing)
+import App.Component.OrgFileEditor.Planning as PlanningC
 
 
 type Slot = H.Slot Query Output
@@ -130,12 +132,27 @@ renderWords = case _ of
   Image imageSrc ->
     qmkspan "image"
       $ HH.img [ HP.src $ imageSrcToLink imageSrc ]
-  Punct cp -> HH.text "codepoint"
-  Plain plain -> HH.text plain
-  Markup str -> HH.text str
-  DateTime { start, end } -> HH.text "datettime"
-  ClockW clock -> HH.text "clock"
-  DiaryW diary -> HH.text "diary"
+  Punct cp ->
+    qmkspan "cp" $ HH.text
+      $ String.fromCodePointArray
+      $ Array.singleton cp
+  Plain plain -> qmkspan "plain" $ HH.text plain
+  Markup str -> qmkspan "markup-word" $ HH.text str
+  DateTime { start, end } ->
+    case end of
+      Just endTime ->
+        HH.span
+          [ HP.class_ $ cn $ "ndorg-markup-range" ]
+          [ PlanningC.renderDateTime start
+          , qsep "--"
+          , PlanningC.renderDateTime endTime
+          ]
+      Nothing ->
+        PlanningC.renderDateTime start
+  ClockW clock ->
+    PlanningC.renderClock clock
+  DiaryW diary ->
+    PlanningC.renderDiary diary
   FootnoteRef { label, def } ->
     qmkspan "fn-ref"
       $ HH.a
@@ -154,6 +171,7 @@ renderWords = case _ of
     imageSrcToLink = case _ of
       IS.RemoteSrc src -> src
       IS.LocalSrc src -> src
+    qsep sep = HH.span [ HP.class_ $ cn "ndorg-time-sep" ] [ HH.text sep ]
     qmkspan class_ = HH.span [ HP.class_ $ cn $ "ndorg-markup-" <> class_ ] <<< Array.singleton
     {-
     wrapTag how =
